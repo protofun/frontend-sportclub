@@ -1,0 +1,157 @@
+package org.example.project.member.screens
+
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import org.example.project.member.navigation.MemberNavigator
+import org.example.project.model.*
+import org.example.project.viewmodel.MemberSessionViewModel
+
+@Composable
+fun MemberSubscriptionScreen(navigator: MemberNavigator, sessionVm: MemberSessionViewModel) {
+    val state = sessionVm.state
+    val sub = state.memberInfo?.activeSubscription
+    val scroll = rememberScrollState()
+
+    LaunchedEffect(navigator.currentUser?.userId) {
+        navigator.currentUser?.let { sessionVm.loadMemberInfo(it.userId) }
+    }
+
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll).background(Color(0xFFF8F9FA))) {
+        Box(modifier = Modifier.fillMaxWidth().background(Color(0xFF1565C0)).padding(20.dp)) {
+            Column {
+                Text("My Subscription", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text("Manage your SportClub membership", fontSize = 13.sp, color = Color.White.copy(0.8f))
+            }
+        }
+
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            if (sub == null) {
+                Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("💳", fontSize = 48.sp)
+                        Spacer(Modifier.height(12.dp))
+                        Text("No active subscription", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text("Subscribe to start working out!", fontSize = 14.sp, color = Color(0xFF757575))
+                    }
+                }
+            } else {
+                val isActive = sub.status == SubscriptionStatus.ACTIVE
+
+                // Current plan card
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isActive) Color(0xFF1565C0) else Color(0xFF9E9E9E)
+                    )
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(24.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Column {
+                                Text("Current Plan", fontSize = 13.sp, color = Color.White.copy(0.8f))
+                                Text(sub.planName, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                            Box(
+                                modifier = Modifier.clip(RoundedCornerShape(20.dp))
+                                    .background(Color.White.copy(0.2f))
+                                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                            ) {
+                                Text(sub.status.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            }
+                        }
+                        Spacer(Modifier.height(20.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                            Column {
+                                Text("Start Date", fontSize = 12.sp, color = Color.White.copy(0.7f))
+                                Text(sub.startDate, fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium)
+                            }
+                            if (sub.endDate != null) {
+                                Column {
+                                    Text("End Date", fontSize = 12.sp, color = Color.White.copy(0.7f))
+                                    Text(sub.endDate, fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium)
+                                }
+                            }
+                            Column {
+                                Text("Billing", fontSize = 12.sp, color = Color.White.copy(0.7f))
+                                Text(sub.billingCycle.name, fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium)
+                            }
+                        }
+                    }
+                }
+
+                // Benefits
+                Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
+                        Text("Plan Benefits", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Spacer(Modifier.height(12.dp))
+                        val perks = when (sub.type) {
+                            SubscriptionType.UNLIMITED -> listOf(
+                                "Unlimited class reservations",
+                                "Access to all workout types",
+                                "Priority booking window",
+                                "No weekly class limit"
+                            )
+                            SubscriptionType.TWO_PER_WEEK -> listOf(
+                                "Up to 2 classes per week",
+                                "Access to all workout types",
+                                "Standard booking window"
+                            )
+                        }
+                        perks.forEach { perk ->
+                            Row(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("✓", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(perk, fontSize = 14.sp)
+                            }
+                        }
+                    }
+                }
+
+                if (sub.type == SubscriptionType.TWO_PER_WEEK && isActive) {
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF8E1))
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("Upgrade to Unlimited", fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.Center)
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                "Unlimited access to all classes from €55/month",
+                                fontSize = 13.sp, color = Color(0xFF757575), textAlign = TextAlign.Center
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = {},
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6D00))
+                            ) { Text("Upgrade Now") }
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+    }
+}

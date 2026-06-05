@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\")",
+      "Bash(./gradlew :webApp:jsBrowserDevelopmentRun)",
+      "Bash(echo \"Build started in background \\(PID: $!\\)\")",
+      "Bash(./gradlew :webApp:compileKotlinJs)",
+      "Bash(./gradlew :desktopApp:compileKotlin)",
+      "Bash(./gradlew :desktopApp:compileKotlin --configuration-cache=off)",
+      "Bash(./gradlew :desktopApp:compileKotlin --no-configuration-cache)",
+      "Bash(./gradlew :desktopApp:compileKotlin --no-configuration-cache --offline)",
+      "Bash(./gradlew :webApp:compileKotlinJs --no-configuration-cache)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files/Microsoft//**)",
+      "Bash(java -version)",
+      "Bash(./gradlew :webApp:jsBrowserDevelopmentRun --no-configuration-cache)",
+      "Bash(./gradlew :webApp:jsBrowserDevelopmentRun --no-configuration-cache --info)",
+      "Bash(./gradlew :androidApp:assembleDebug --no-configuration-cache)",
+      "Bash(./gradlew :desktopApp:packageMsi --no-configuration-cache)"
+    ]
+  }
+}
