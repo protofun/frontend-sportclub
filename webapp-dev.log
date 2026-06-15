@@ -107,3 +107,38 @@ modules by path ../../node_modules/ 506 KiB
     + 3 modules
   + 4 modules
 webpack 5.101.3 compiled successfully in 4455 ms
+
+> Task :webApp:jsBrowserDevelopmentRun FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':webApp:jsBrowserDevelopmentRun'.
+> asset webApp.js 42.1 MiB [emitted] (name: main)
+  asset 6e23e5428398b92da386.wasm 8.25 MiB [emitted] [immutable] [from: kotlin/skiko.wasm] (auxiliary name: main)
+  asset node_modules_ws_browser_js.js 1.75 KiB [emitted]
+  runtime modules 32.3 KiB 15 modules
+  modules by path ./kotlin/ 29 MiB (javascript) 8.25 MiB (asset)
+    modules with warnings 28.4 MiB [true warnings]
+      ./kotlin/Frontend-sportclub-webApp.js 1.52 MiB [built] [code generated] [16 warnings]
+      + 51 modules
+    modules by path ./kotlin/*.mjs 620 KiB
+      ./kotlin/skiko.mjs 501 KiB [built] [code generated]
+      ./kotlin/js-reexport-symbols.mjs 120 KiB [built] [code generated]
+    ./kotlin/skiko.wasm 8.25 MiB (asset) 42 bytes (javascript) [built] [code generated]
+  modules by path ../../node_modules/ 506 KiB
+    modules by path ../../node_modules/webpack-dev-server/client/ 90.2 KiB 8 modules
+    modules by path ../../node_modules/webpack/hot/*.js 5.17 KiB
+      ../../node_modules/webpack/hot/dev-server.js 1.94 KiB [built] [code generated]
+      + 3 modules
+    + 4 modules
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 43m 31s
+42 actionable tasks: 10 executed, 32 up-to-date
+Configuration cache entry stored.

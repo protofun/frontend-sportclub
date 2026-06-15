@@ -104,6 +104,10 @@ class MockApiService : SportClubApiService {
     private val memberEnrollments = mutableMapOf<String, MutableSet<String>>()
     private val memberWaitlists = mutableMapOf<String, MutableSet<String>>()
 
+    override fun logout() {
+        currentUserId = null
+    }
+
     override suspend fun login(request: LoginRequest): LoginResponse =
         when (request.email) {
             "admin@sportclub.nl" -> LoginResponse("mock-token", "100", UserRole.STAFF, "Admin User", request.email).also { currentUserId = it.userId }

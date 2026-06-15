@@ -23,7 +23,12 @@ class AuthViewModel(private val api: SportClubApiService) {
             state = state.copy(isLoading = true, error = null)
             try {
                 val response = api.login(LoginRequest(email, password))
-                state = state.copy(isLoading = false, currentUser = response, isAuthenticated = true)
+                if (response.role != UserRole.STAFF) {
+                    api.logout()
+                    state = AuthState(error = "Only staff members can log in to this website.")
+                } else {
+                    state = state.copy(isLoading = false, currentUser = response, isAuthenticated = true)
+                }
             } catch (e: Exception) {
                 state = state.copy(isLoading = false, error = e.message ?: "Login failed")
             }
@@ -31,6 +36,7 @@ class AuthViewModel(private val api: SportClubApiService) {
     }
 
     fun logout() {
+        api.logout()
         state = AuthState()
     }
 

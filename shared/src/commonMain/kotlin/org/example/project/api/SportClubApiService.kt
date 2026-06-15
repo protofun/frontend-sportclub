@@ -5,6 +5,7 @@ import org.example.project.model.*
 interface SportClubApiService {
     suspend fun login(request: LoginRequest): LoginResponse
     suspend fun registerMember(request: RegistrationRequest): LoginResponse
+    fun logout()
 
     suspend fun getWorkouts(): List<Workout>
     suspend fun createWorkout(request: WorkoutRequest): Workout

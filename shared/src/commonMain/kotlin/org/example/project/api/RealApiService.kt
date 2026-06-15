@@ -21,6 +21,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.example.project.model.*
+import org.example.project.util.addDaysToIsoDateTime
 import org.example.project.util.todayDateString
 
 /**
@@ -60,7 +61,17 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
         val email: String,
         val role: String,
         val username: String? = null,
-        val profileImageUrl: String? = null
+        val profileImageUrl: String? = null,
+        val specialties: List<String> = emptyList()
+    )
+
+    @Serializable
+    private data class InstructorRequestDto(
+        val firstName: String,
+        val lastName: String,
+        val email: String,
+        val photoUrl: String? = null,
+        val specialties: List<String> = emptyList()
     )
 
     @Serializable
@@ -210,6 +221,11 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
         )
     }
 
+    override fun logout() {
+        authToken = null
+        currentUserId = null
+    }
+
     override suspend fun registerMember(request: RegistrationRequest): LoginResponse {
         val username = "${request.firstName} ${request.lastName}".trim().ifBlank { null }
         val body = RegisterRequestDto(
@@ -263,7 +279,7 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
 
     private fun WorkoutDto.toWorkout() = Workout(id, name, description ?: "")
 
-    // ---- instructors (read-only: backend has no instructor-management endpoints) ----------------
+    // ---- instructors --------------------------------------------------------------------------
 
     override suspend fun getInstructors(): List<Instructor> =
         apiGet<List<UserDto>>("/users")
@@ -271,20 +287,27 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
             .map { it.toInstructor() }
 
     override suspend fun createInstructor(request: InstructorRequest): Instructor =
-        throw UnsupportedOperationException("De backend heeft geen endpoint om instructeurs aan te maken.")
+        apiPost<InstructorRequestDto, UserDto>("/users/instructors", request.toDto()).toInstructor()
 
     override suspend fun updateInstructor(id: String, request: InstructorRequest): Instructor =
-        throw UnsupportedOperationException("De backend heeft geen endpoint om instructeurs te wijzigen.")
+        apiPut<InstructorRequestDto, UserDto>("/users/instructors/$id", request.toDto()).toInstructor()
 
-    override suspend fun deleteInstructor(id: String): Unit =
-        throw UnsupportedOperationException("De backend heeft geen endpoint om instructeurs te verwijderen.")
+    override suspend fun deleteInstructor(id: String): Unit = apiDelete("/users/$id")
+
+    private fun InstructorRequest.toDto() = InstructorRequestDto(
+        firstName   = firstName,
+        lastName    = lastName,
+        email       = email,
+        photoUrl    = photoUrl,
+        specialties = specialties
+    )
 
     private fun UserDto.toInstructor(): Instructor {
         val name = username?.takeIf { it.isNotBlank() } ?: email
         val parts = name.trim().split(" ")
         val first = parts.first()
         val last = parts.drop(1).joinToString(" ")
-        return Instructor(id, first, last, email, profileImageUrl, emptyList())
+        return Instructor(id, first, last, email, profileImageUrl, specialties)
     }
 
     // ---- locations (no backend endpoint -- static reference data) --------------------------------
@@ -302,7 +325,7 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
             RecurrenceType.NONE -> listOf(apiPost<LessonRequestDto, LessonDto>("/lessons", body))
             RecurrenceType.DAILY, RecurrenceType.WEEKLY -> {
                 val until = request.recurrenceEndDate
-                    ?: throw IllegalArgumentException("Een einddatum is vereist voor herhalende lessen")
+                    ?: throw IllegalArgumentException("An end date is required for recurring lessons")
                 val repeatEveryDays = if (request.recurrence == RecurrenceType.WEEKLY) 7 else 1
                 apiPost("/lessons/recurring?repeatEveryDays=$repeatEveryDays&until=${until.toEndOfDayDateTimeString()}", body)
             }
@@ -310,8 +333,25 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
         return enrichLessons(dtos)
     }
 
-    override suspend fun updateLesson(id: String, request: LessonRequest): Lesson =
-        enrichLessons(listOf(apiPut("/lessons/$id", request.toDto()))).first()
+    override suspend fun updateLesson(id: String, request: LessonRequest): Lesson {
+        val updated = apiPut<LessonRequestDto, LessonDto>("/lessons/$id", request.toDto())
+        when (request.recurrence) {
+            RecurrenceType.NONE -> {}
+            RecurrenceType.DAILY, RecurrenceType.WEEKLY -> {
+                val until = request.recurrenceEndDate
+                    ?: throw IllegalArgumentException("An end date is required for recurring lessons")
+                val repeatEveryDays = if (request.recurrence == RecurrenceType.WEEKLY) 7 else 1
+                val recurringBody = request.toDto().copy(
+                    startTime = addDaysToIsoDateTime(request.startTime, repeatEveryDays)
+                )
+                apiPost<LessonRequestDto, List<LessonDto>>(
+                    "/lessons/recurring?repeatEveryDays=$repeatEveryDays&until=${until.toEndOfDayDateTimeString()}",
+                    recurringBody
+                )
+            }
+        }
+        return enrichLessons(listOf(updated)).first()
+    }
 
     override suspend fun deleteLesson(id: String) = apiDelete("/lessons/$id")
 
