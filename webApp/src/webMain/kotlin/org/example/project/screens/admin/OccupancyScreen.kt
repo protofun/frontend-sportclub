@@ -18,11 +18,12 @@ import org.example.project.components.formatDate
 import org.example.project.components.formatTime
 import org.example.project.model.LessonOccupancy
 import org.example.project.theme.*
+import org.example.project.util.todayDateString
 
 @Composable
 fun OccupancyScreen(api: SportClubApiService) {
-    var startDate by remember { mutableStateOf("2026-06-05") }
-    var endDate by remember { mutableStateOf("2026-06-11") }
+    var startDate by remember { mutableStateOf(todayDateString()) }
+    var endDate by remember { mutableStateOf(todayDateString()) }
     var occupancy by remember { mutableStateOf<List<LessonOccupancy>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }

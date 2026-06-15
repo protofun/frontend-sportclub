@@ -17,7 +17,7 @@ import org.example.project.components.ErrorBanner
 import org.example.project.components.SubscriptionStatusBadge
 import org.example.project.model.BillingCycle
 import org.example.project.model.Member
-import org.example.project.model.SubscriptionType
+import org.example.project.model.MembershipType
 import org.example.project.theme.*
 import org.example.project.viewmodel.MemberViewModel
 
@@ -51,8 +51,8 @@ fun MembersScreen(vm: MemberViewModel) {
 
             // Summary stats
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                val active = state.members.count { it.activeSubscription?.status?.name == "ACTIVE" }
-                val expired = state.members.count { it.activeSubscription?.status?.name == "EXPIRED" }
+                val active = state.members.count { it.activeMembership?.status?.name == "ACTIVE" }
+                val expired = state.members.count { it.activeMembership?.status?.name == "EXPIRED" }
                 InfoChip("Total: ${state.members.size}", OnBackground)
                 InfoChip("Active: $active", Success)
                 InfoChip("Expired: $expired", Error)
@@ -119,7 +119,7 @@ private fun MemberRow(member: Member, onClick: () -> Unit) {
         }
         Text(member.email, fontSize = 13.sp, color = OnSurfaceVariant, modifier = Modifier.weight(2f))
         Text(member.phone.ifBlank { "–" }, fontSize = 13.sp, color = OnSurfaceVariant, modifier = Modifier.weight(1f))
-        val sub = member.activeSubscription
+        val sub = member.activeMembership
         Text(
             sub?.planName ?: "No subscription",
             fontSize = 13.sp,
@@ -136,7 +136,7 @@ private fun MemberRow(member: Member, onClick: () -> Unit) {
 
 @Composable
 private fun MemberDetailDialog(member: Member, onDismiss: () -> Unit) {
-    val sub = member.activeSubscription
+    val sub = member.activeMembership
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -156,7 +156,7 @@ private fun MemberDetailDialog(member: Member, onDismiss: () -> Unit) {
                 Text("Subscription", fontWeight = FontWeight.SemiBold)
                 if (sub != null) {
                     DetailRow("Plan", sub.planName)
-                    DetailRow("Type", if (sub.type == SubscriptionType.TWO_PER_WEEK) "2x per week" else "Unlimited")
+                    DetailRow("Type", if (sub.type == MembershipType.BASIC) "Basic" else "Unlimited")
                     DetailRow("Billing", if (sub.billingCycle == BillingCycle.MONTHLY) "Monthly" else "Yearly")
                     DetailRow("Start Date", sub.startDate)
                     DetailRow("End Date", sub.endDate ?: "Ongoing")

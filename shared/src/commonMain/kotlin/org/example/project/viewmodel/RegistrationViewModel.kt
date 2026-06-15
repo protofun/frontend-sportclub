@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.*
 import org.example.project.api.SportClubApiService
 import org.example.project.model.*
+import org.example.project.util.todayDateString
 
 enum class RegistrationStep { PERSONAL_INFO, SUBSCRIPTION, PAYMENT, CONFIRMATION }
 
@@ -12,15 +13,14 @@ data class RegistrationState(
     val firstName: String = "",
     val lastName: String = "",
     val email: String = "",
-    val phone: String = "",
     val password: String = "",
     val confirmPassword: String = "",
-    val selectedPlan: SubscriptionPlan? = null,
-    val startDate: String = "2026-06-05",
-    val plans: List<SubscriptionPlan> = emptyList(),
+    val selectedPlan: MembershipPrice? = null,
+    val startDate: String = todayDateString(),
+    val plans: List<MembershipPrice> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val registeredMember: Member? = null,
+    val registeredUser: LoginResponse? = null,
     val isComplete: Boolean = false
 )
 
@@ -34,15 +34,15 @@ class RegistrationViewModel(private val api: SportClubApiService) {
         scope.launch {
             state = state.copy(isLoading = true)
             try {
-                state = state.copy(isLoading = false, plans = api.getSubscriptionPlans())
+                state = state.copy(isLoading = false, plans = api.getMembershipPrices())
             } catch (e: Exception) {
                 state = state.copy(isLoading = false, error = e.message)
             }
         }
     }
 
-    fun updatePersonalInfo(firstName: String, lastName: String, email: String, phone: String, password: String, confirmPassword: String) {
-        state = state.copy(firstName = firstName, lastName = lastName, email = email, phone = phone, password = password, confirmPassword = confirmPassword)
+    fun updatePersonalInfo(firstName: String, lastName: String, email: String, password: String, confirmPassword: String) {
+        state = state.copy(firstName = firstName, lastName = lastName, email = email, password = password, confirmPassword = confirmPassword)
     }
 
     fun goToSubscription() {
@@ -60,7 +60,7 @@ class RegistrationViewModel(private val api: SportClubApiService) {
         }
     }
 
-    fun selectPlan(plan: SubscriptionPlan) {
+    fun selectPlan(plan: MembershipPrice) {
         state = state.copy(selectedPlan = plan, step = RegistrationStep.PAYMENT)
     }
 
@@ -83,13 +83,13 @@ class RegistrationViewModel(private val api: SportClubApiService) {
                     firstName = state.firstName,
                     lastName = state.lastName,
                     email = state.email,
-                    phone = state.phone,
                     password = state.password,
-                    subscriptionPlanId = plan.id,
+                    membershipType = plan.type,
+                    billingCycle = plan.billingCycle,
                     startDate = state.startDate
                 )
-                val member = api.registerMember(req)
-                state = state.copy(isLoading = false, registeredMember = member, step = RegistrationStep.CONFIRMATION, isComplete = true)
+                val user = api.registerMember(req)
+                state = state.copy(isLoading = false, registeredUser = user, step = RegistrationStep.CONFIRMATION, isComplete = true)
             } catch (e: Exception) {
                 state = state.copy(isLoading = false, error = e.message)
             }

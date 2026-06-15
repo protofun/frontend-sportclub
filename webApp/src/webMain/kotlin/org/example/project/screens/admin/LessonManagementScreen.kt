@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.sp
 import org.example.project.components.*
 import org.example.project.model.*
 import org.example.project.theme.*
+import org.example.project.util.todayDateString
 import org.example.project.viewmodel.LessonViewModel
 
 @Composable
@@ -106,8 +107,8 @@ fun LessonManagementScreen(vm: LessonViewModel) {
             workouts = state.workouts,
             instructors = state.instructors,
             locations = state.locations,
-            onSave = { wId, iId, lId, startTime, dur, rec, recEnd, recCount ->
-                vm.save(wId, iId, lId, startTime, dur, rec, recEnd, recCount)
+            onSave = { wId, iId, lId, startTime, dur, capacity, rec, recEnd ->
+                vm.save(wId, iId, lId, startTime, dur, capacity, rec, recEnd)
             },
             onDismiss = { vm.dismissDialog() }
         )
@@ -158,17 +159,17 @@ private fun LessonDialog(
     workouts: List<Workout>,
     instructors: List<Instructor>,
     locations: List<Location>,
-    onSave: (Int, Int?, Int, String, Int, RecurrenceType, String?, Int?) -> Unit,
+    onSave: (String, String?, String, String, Int, Int, RecurrenceType, String?) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedWorkout by remember { mutableStateOf(existing?.workoutId ?: workouts.firstOrNull()?.id ?: 0) }
-    var selectedInstructor by remember { mutableStateOf<Int?>(existing?.instructorId) }
-    var selectedLocation by remember { mutableStateOf(existing?.locationId ?: locations.firstOrNull()?.id ?: 0) }
-    var startTime by remember { mutableStateOf(existing?.startTime ?: "2026-06-05T09:00:00") }
+    var selectedWorkout by remember { mutableStateOf(existing?.workoutId ?: workouts.firstOrNull()?.id ?: "") }
+    var selectedInstructor by remember { mutableStateOf<String?>(existing?.instructorId) }
+    var selectedLocation by remember { mutableStateOf(existing?.locationId ?: locations.firstOrNull()?.id ?: "") }
+    var startTime by remember { mutableStateOf(existing?.startTime ?: "${todayDateString()}T09:00:00") }
     var duration by remember { mutableStateOf((existing?.durationMinutes ?: 60).toString()) }
+    var capacity by remember { mutableStateOf((existing?.maxCapacity ?: 10).toString()) }
     var recurrence by remember { mutableStateOf(RecurrenceType.NONE) }
     var recEndDate by remember { mutableStateOf("") }
-    var recCount by remember { mutableStateOf("") }
 
     var workoutExpanded by remember { mutableStateOf(false) }
     var instructorExpanded by remember { mutableStateOf(false) }
@@ -230,6 +231,8 @@ private fun LessonDialog(
                     OutlinedTextField(duration, { duration = it }, label = { Text("Duration (min)") }, modifier = Modifier.weight(1f))
                 }
 
+                OutlinedTextField(capacity, { capacity = it }, label = { Text("Capacity") }, modifier = Modifier.fillMaxWidth())
+
                 // Recurrence
                 Text("Recurrence", fontWeight = FontWeight.Medium, fontSize = 13.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -243,10 +246,7 @@ private fun LessonDialog(
                 }
 
                 if (recurrence != RecurrenceType.NONE) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedTextField(recEndDate, { recEndDate = it }, label = { Text("End Date (optional)") }, modifier = Modifier.weight(1f))
-                        OutlinedTextField(recCount, { recCount = it }, label = { Text("# Occurrences") }, modifier = Modifier.weight(1f))
-                    }
+                    OutlinedTextField(recEndDate, { recEndDate = it }, label = { Text("End Date (optional)") }, modifier = Modifier.fillMaxWidth())
                 }
             }
         },
@@ -256,12 +256,12 @@ private fun LessonDialog(
                     onSave(
                         selectedWorkout, selectedInstructor, selectedLocation,
                         startTime, duration.toIntOrNull() ?: 60,
+                        capacity.toIntOrNull() ?: 10,
                         recurrence,
-                        recEndDate.ifBlank { null },
-                        recCount.toIntOrNull()
+                        recEndDate.ifBlank { null }
                     )
                 },
-                enabled = selectedWorkout > 0 && selectedLocation > 0 && startTime.isNotBlank()
+                enabled = selectedWorkout.isNotBlank() && selectedLocation.isNotBlank() && startTime.isNotBlank()
             ) { Text(if (existing != null) "Save Changes" else "Add Class") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }

@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.example.project.api.MockApiService
+import org.example.project.api.RealApiService
 import org.example.project.api.SportClubApiService
 import org.example.project.member.navigation.MemberNavigator
 import org.example.project.member.navigation.MemberRoute
@@ -17,7 +17,7 @@ import org.example.project.viewmodel.*
 
 @Composable
 fun MemberApp() {
-    val api: SportClubApiService = remember { MockApiService() }
+    val api: SportClubApiService = remember { RealApiService() }
     val navigator = remember { MemberNavigator() }
     val authVm = remember { AuthViewModel(api) }
     val scheduleVm = remember { ScheduleViewModel(api) }
@@ -71,7 +71,7 @@ fun MemberApp() {
                         is MemberRoute.Schedule -> MemberScheduleScreen(navigator, scheduleVm, sessionVm)
                         is MemberRoute.MyClasses -> MemberMyClassesScreen(navigator, sessionVm)
                         is MemberRoute.Subscription -> MemberSubscriptionScreen(navigator, sessionVm)
-                        is MemberRoute.Profile -> MemberProfileScreen(navigator, sessionVm)
+                        is MemberRoute.Profile -> MemberProfileScreen(navigator, sessionVm, authVm)
                     }
                 }
             }

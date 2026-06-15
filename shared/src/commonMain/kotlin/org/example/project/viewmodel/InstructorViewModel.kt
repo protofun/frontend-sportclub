@@ -11,7 +11,7 @@ data class InstructorState(
     val instructors: List<Instructor> = emptyList(),
     val showDialog: Boolean = false,
     val editingInstructor: Instructor? = null,
-    val showDeleteConfirm: Int? = null
+    val showDeleteConfirm: String? = null
 )
 
 class InstructorViewModel(private val api: SportClubApiService) {
@@ -34,7 +34,7 @@ class InstructorViewModel(private val api: SportClubApiService) {
     fun showAddDialog() { state = state.copy(showDialog = true, editingInstructor = null) }
     fun showEditDialog(ins: Instructor) { state = state.copy(showDialog = true, editingInstructor = ins) }
     fun dismissDialog() { state = state.copy(showDialog = false, editingInstructor = null) }
-    fun showDeleteConfirm(id: Int) { state = state.copy(showDeleteConfirm = id) }
+    fun showDeleteConfirm(id: String) { state = state.copy(showDeleteConfirm = id) }
     fun dismissDeleteConfirm() { state = state.copy(showDeleteConfirm = null) }
 
     fun save(firstName: String, lastName: String, email: String, specialties: List<String>) {
@@ -52,7 +52,7 @@ class InstructorViewModel(private val api: SportClubApiService) {
         }
     }
 
-    fun delete(id: Int) {
+    fun delete(id: String) {
         scope.launch {
             state = state.copy(isLoading = true, showDeleteConfirm = null)
             try {

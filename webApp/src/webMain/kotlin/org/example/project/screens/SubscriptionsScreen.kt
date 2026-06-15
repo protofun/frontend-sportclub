@@ -14,8 +14,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.model.BillingCycle
-import org.example.project.model.SubscriptionPlan
-import org.example.project.model.SubscriptionType
+import org.example.project.model.MembershipPrice
+import org.example.project.model.MembershipType
 import org.example.project.navigation.Navigator
 import org.example.project.navigation.Route
 import org.example.project.theme.*
@@ -40,10 +40,10 @@ fun SubscriptionsScreen(navigator: Navigator) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 48.dp, vertical = 40.dp)) {
             // Plans
             val plans = listOf(
-                SubscriptionPlan(1, SubscriptionType.TWO_PER_WEEK, BillingCycle.MONTHLY, 29.0, "2x per week", "Work out up to 2 times per week"),
-                SubscriptionPlan(2, SubscriptionType.TWO_PER_WEEK, BillingCycle.YEARLY, 299.0, "2x per week", "Work out up to 2 times per week"),
-                SubscriptionPlan(3, SubscriptionType.UNLIMITED, BillingCycle.MONTHLY, 55.0, "Unlimited", "Unlimited access to all classes"),
-                SubscriptionPlan(4, SubscriptionType.UNLIMITED, BillingCycle.YEARLY, 549.0, "Unlimited", "Unlimited access to all classes")
+                MembershipPrice(MembershipType.BASIC, BillingCycle.MONTHLY, 2900),
+                MembershipPrice(MembershipType.BASIC, BillingCycle.YEARLY, 29900),
+                MembershipPrice(MembershipType.UNLIMITED, BillingCycle.MONTHLY, 5500),
+                MembershipPrice(MembershipType.UNLIMITED, BillingCycle.YEARLY, 54900)
             )
 
             Row(
@@ -126,13 +126,13 @@ fun SubscriptionsScreen(navigator: Navigator) {
 
 @Composable
 private fun SubscriptionCard(
-    plan: SubscriptionPlan,
+    plan: MembershipPrice,
     isPopular: Boolean,
     onSelect: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val savings = if (plan.billingCycle == BillingCycle.YEARLY) {
-        val monthly = if (plan.type == SubscriptionType.TWO_PER_WEEK) 29.0 else 55.0
+        val monthly = if (plan.type == MembershipType.BASIC) 29.0 else 55.0
         val yearlyIfMonthly = monthly * 12
         (yearlyIfMonthly - plan.priceEuros).toInt()
     } else 0

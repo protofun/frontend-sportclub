@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import org.example.project.member.navigation.MemberNavigator
 import org.example.project.member.navigation.MemberRoute
 import org.example.project.model.*
+import org.example.project.util.todayDateString
 import org.example.project.viewmodel.MemberSessionViewModel
 
 @Composable
@@ -58,12 +59,12 @@ fun MemberHomeScreen(navigator: MemberNavigator, sessionVm: MemberSessionViewMod
         }
 
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            SubscriptionStatusCard(state.memberInfo?.activeSubscription)
+            SubscriptionStatusCard(state.memberInfo?.activeMembership)
 
             Text("Upcoming Classes", fontWeight = FontWeight.Bold, fontSize = 18.sp)
 
             val upcoming = state.enrolledLessons
-                .filter { it.startTime >= "2026-06-05" }
+                .filter { it.startTime >= todayDateString() }
                 .sortedBy { it.startTime }
                 .take(3)
 
@@ -111,8 +112,8 @@ fun MemberHomeScreen(navigator: MemberNavigator, sessionVm: MemberSessionViewMod
 }
 
 @Composable
-private fun SubscriptionStatusCard(sub: MemberSubscription?) {
-    val isActive = sub?.status == SubscriptionStatus.ACTIVE
+private fun SubscriptionStatusCard(sub: Membership?) {
+    val isActive = sub?.status == MembershipStatus.ACTIVE
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(

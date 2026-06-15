@@ -15,13 +15,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.member.navigation.MemberNavigator
 import org.example.project.model.*
+import org.example.project.util.todayDateString
 import org.example.project.viewmodel.MemberSessionViewModel
+
+private fun formatPrice(priceInCents: Int): String =
+    "${priceInCents / 100}.${(priceInCents % 100).toString().padStart(2, '0')}"
+
+// Membership plans don't change often, so they're hardcoded here rather than fetched.
+private val availablePlans = listOf(
+    MembershipPrice(MembershipType.BASIC, BillingCycle.MONTHLY, 2900),
+    MembershipPrice(MembershipType.BASIC, BillingCycle.YEARLY, 29900),
+    MembershipPrice(MembershipType.UNLIMITED, BillingCycle.MONTHLY, 5500),
+    MembershipPrice(MembershipType.UNLIMITED, BillingCycle.YEARLY, 54900)
+)
 
 @Composable
 fun MemberSubscriptionScreen(navigator: MemberNavigator, sessionVm: MemberSessionViewModel) {
     val state = sessionVm.state
-    val sub = state.memberInfo?.activeSubscription
+    val sub = state.memberInfo?.activeMembership
     val scroll = rememberScrollState()
+    var subscribingTo by remember { mutableStateOf<MembershipPrice?>(null) }
+    var isUpgrading by remember { mutableStateOf(false) }
 
     LaunchedEffect(navigator.currentUser?.userId) {
         navigator.currentUser?.let { sessionVm.loadMemberInfo(it.userId) }
@@ -48,8 +62,41 @@ fun MemberSubscriptionScreen(navigator: MemberNavigator, sessionVm: MemberSessio
                         Text("Subscribe to start working out!", fontSize = 14.sp, color = Color(0xFF757575))
                     }
                 }
+
+                Text("Choose a plan", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
+                availablePlans.forEach { plan ->
+                    Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(20.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(plan.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(plan.description, fontSize = 13.sp, color = Color(0xFF757575))
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    "€${formatPrice(plan.priceInCents)} / ${if (plan.billingCycle == BillingCycle.MONTHLY) "month" else "year"}",
+                                    fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1565C0)
+                                )
+                            }
+                            Button(
+                                onClick = {
+                                    subscribingTo = plan
+                                    navigator.currentUser?.let { user ->
+                                        sessionVm.subscribe(user.userId, plan.type, plan.billingCycle, todayDateString()) {
+                                            subscribingTo = null
+                                        }
+                                    }
+                                },
+                                enabled = subscribingTo == null
+                            ) { Text(if (subscribingTo == plan) "..." else "Subscribe") }
+                        }
+                    }
+                }
             } else {
-                val isActive = sub.status == SubscriptionStatus.ACTIVE
+                val isActive = sub.status == MembershipStatus.ACTIVE
 
                 // Current plan card
                 Card(
@@ -102,13 +149,13 @@ fun MemberSubscriptionScreen(navigator: MemberNavigator, sessionVm: MemberSessio
                         Text("Plan Benefits", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         Spacer(Modifier.height(12.dp))
                         val perks = when (sub.type) {
-                            SubscriptionType.UNLIMITED -> listOf(
+                            MembershipType.UNLIMITED -> listOf(
                                 "Unlimited class reservations",
                                 "Access to all workout types",
                                 "Priority booking window",
                                 "No weekly class limit"
                             )
-                            SubscriptionType.TWO_PER_WEEK -> listOf(
+                            MembershipType.BASIC -> listOf(
                                 "Up to 2 classes per week",
                                 "Access to all workout types",
                                 "Standard booking window"
@@ -127,7 +174,7 @@ fun MemberSubscriptionScreen(navigator: MemberNavigator, sessionVm: MemberSessio
                     }
                 }
 
-                if (sub.type == SubscriptionType.TWO_PER_WEEK && isActive) {
+                if (sub.type == MembershipType.BASIC && isActive) {
                     Card(
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF8E1))
@@ -144,9 +191,15 @@ fun MemberSubscriptionScreen(navigator: MemberNavigator, sessionVm: MemberSessio
                             )
                             Spacer(Modifier.height(12.dp))
                             Button(
-                                onClick = {},
+                                onClick = {
+                                    isUpgrading = true
+                                    navigator.currentUser?.let { user ->
+                                        sessionVm.upgrade(user.userId, sub.id) { isUpgrading = false }
+                                    }
+                                },
+                                enabled = !isUpgrading,
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6D00))
-                            ) { Text("Upgrade Now") }
+                            ) { Text(if (isUpgrading) "Upgrading..." else "Upgrade Now") }
                         }
                     }
                 }

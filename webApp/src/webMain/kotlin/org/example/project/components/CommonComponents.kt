@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.model.Lesson
 import org.example.project.model.LocationType
-import org.example.project.model.SubscriptionStatus
+import org.example.project.model.MembershipStatus
 import org.example.project.theme.*
 
 @Composable
@@ -139,12 +139,12 @@ fun OccupancyBadge(enrolled: Int, max: Int) {
 }
 
 @Composable
-fun SubscriptionStatusBadge(status: SubscriptionStatus) {
+fun SubscriptionStatusBadge(status: MembershipStatus) {
     val (label, color) = when (status) {
-        SubscriptionStatus.ACTIVE -> "Active" to Success
-        SubscriptionStatus.EXPIRED -> "Expired" to Error
-        SubscriptionStatus.CANCELLED -> "Cancelled" to OnSurfaceVariant
-        SubscriptionStatus.PENDING -> "Pending" to Warning
+        MembershipStatus.ACTIVE -> "Active" to Success
+        MembershipStatus.EXPIRED -> "Expired" to Error
+        MembershipStatus.CANCELLED -> "Cancelled" to OnSurfaceVariant
+        MembershipStatus.PENDING -> "Pending" to Warning
     }
     Box(
         modifier = Modifier
@@ -205,12 +205,12 @@ fun formatDate(date: String): String {
 }
 
 fun dayOfWeek(date: String): String {
-    // Very simplified - just return the day number's name for known dates
-    val days = mapOf(
-        "2026-06-05" to "Friday", "2026-06-06" to "Saturday", "2026-06-07" to "Sunday",
-        "2026-06-08" to "Monday", "2026-06-09" to "Tuesday", "2026-06-10" to "Wednesday",
-        "2026-06-11" to "Thursday", "2026-06-12" to "Friday", "2026-06-13" to "Saturday",
-        "2026-06-14" to "Sunday"
-    )
-    return days[date] ?: date
+    val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+    return try {
+        val parts = date.split("-")
+        val y = parts[0].toInt(); val m = parts[1].toInt(); val d = parts[2].toInt()
+        val t = (14 - m) / 12; val yr = y - t; val mr = m + 12 * t - 2
+        val dow = (d + yr + yr / 4 - yr / 100 + yr / 400 + (31 * mr) / 12) % 7
+        days[if (dow == 0) 6 else dow - 1]
+    } catch (e: Exception) { date }
 }

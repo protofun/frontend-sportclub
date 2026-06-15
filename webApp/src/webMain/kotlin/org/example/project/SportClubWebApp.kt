@@ -3,7 +3,7 @@ package org.example.project
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import org.example.project.api.MockApiService
+import org.example.project.api.RealApiService
 import org.example.project.api.SportClubApiService
 import org.example.project.components.TopNavBar
 import org.example.project.navigation.Navigator
@@ -13,8 +13,7 @@ import org.example.project.screens.admin.*
 import org.example.project.theme.SportClubTheme
 import org.example.project.viewmodel.*
 
-// Switch to KtorApiService when API routes are available
-val api: SportClubApiService = MockApiService()
+val api: SportClubApiService = RealApiService()
 
 @Composable
 fun SportClubWebApp() {

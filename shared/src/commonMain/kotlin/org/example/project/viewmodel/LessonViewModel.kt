@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.*
 import org.example.project.api.SportClubApiService
 import org.example.project.model.*
+import org.example.project.util.todayDateString
 
 data class LessonManagementState(
     val isLoading: Boolean = false,
@@ -14,8 +15,8 @@ data class LessonManagementState(
     val locations: List<Location> = emptyList(),
     val showDialog: Boolean = false,
     val editingLesson: Lesson? = null,
-    val showDeleteConfirm: Int? = null,
-    val selectedWeekStart: String = "2026-06-05"
+    val showDeleteConfirm: String? = null,
+    val selectedWeekStart: String = todayDateString()
 )
 
 class LessonViewModel(private val api: SportClubApiService) {
@@ -71,18 +72,18 @@ class LessonViewModel(private val api: SportClubApiService) {
     fun showAddDialog() { state = state.copy(showDialog = true, editingLesson = null) }
     fun showEditDialog(lesson: Lesson) { state = state.copy(showDialog = true, editingLesson = lesson) }
     fun dismissDialog() { state = state.copy(showDialog = false, editingLesson = null) }
-    fun showDeleteConfirm(id: Int) { state = state.copy(showDeleteConfirm = id) }
+    fun showDeleteConfirm(id: String) { state = state.copy(showDeleteConfirm = id) }
     fun dismissDeleteConfirm() { state = state.copy(showDeleteConfirm = null) }
 
     fun save(
-        workoutId: Int, instructorId: Int?, locationId: Int,
-        startTime: String, durationMinutes: Int,
-        recurrence: RecurrenceType, recurrenceEndDate: String?, recurrenceCount: Int?
+        workoutId: String, instructorId: String?, locationId: String,
+        startTime: String, durationMinutes: Int, capacity: Int,
+        recurrence: RecurrenceType, recurrenceEndDate: String?
     ) {
         scope.launch {
             state = state.copy(isLoading = true)
             try {
-                val req = LessonRequest(workoutId, instructorId, locationId, startTime, durationMinutes, recurrence, recurrenceEndDate, recurrenceCount)
+                val req = LessonRequest(workoutId, instructorId, locationId, startTime, durationMinutes, capacity, recurrence, recurrenceEndDate)
                 val editing = state.editingLesson
                 if (editing != null) api.updateLesson(editing.id, req) else api.createLesson(req)
                 state = state.copy(isLoading = false, showDialog = false, editingLesson = null)
@@ -93,7 +94,7 @@ class LessonViewModel(private val api: SportClubApiService) {
         }
     }
 
-    fun delete(id: Int) {
+    fun delete(id: String) {
         scope.launch {
             state = state.copy(isLoading = true, showDeleteConfirm = null)
             try {

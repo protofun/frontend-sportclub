@@ -4,14 +4,15 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.*
 import org.example.project.api.SportClubApiService
 import org.example.project.model.*
+import org.example.project.util.todayDateString
 
 data class ScheduleState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val lessons: List<Lesson> = emptyList(),
     val workouts: List<Workout> = emptyList(),
-    val selectedDate: String = "2026-06-05",
-    val filterWorkoutId: Int? = null
+    val selectedDate: String = todayDateString(),
+    val filterWorkoutId: String? = null
 ) {
     val filteredLessons: List<Lesson>
         get() = if (filterWorkoutId == null) lessons else lessons.filter { it.workoutId == filterWorkoutId }
@@ -67,7 +68,7 @@ class ScheduleViewModel(private val api: SportClubApiService) {
         load(newDate)
     }
 
-    fun setFilter(workoutId: Int?) {
+    fun setFilter(workoutId: String?) {
         state = state.copy(filterWorkoutId = workoutId)
     }
 }

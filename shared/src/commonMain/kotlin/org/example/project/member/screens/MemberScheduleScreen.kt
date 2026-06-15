@@ -29,6 +29,7 @@ fun MemberScheduleScreen(
     val scroll = rememberScrollState()
 
     LaunchedEffect(state.selectedDate) { scheduleVm.load() }
+    LaunchedEffect(user?.userId) { user?.let { sessionVm.loadWaitlist(it.userId) } }
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll).background(Color(0xFFF8F9FA))) {
         Box(modifier = Modifier.fillMaxWidth().background(Color(0xFF1565C0)).padding(20.dp)) {

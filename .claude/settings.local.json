@@ -16,7 +16,12 @@
       "Bash(./gradlew :webApp:jsBrowserDevelopmentRun --no-configuration-cache)",
       "Bash(./gradlew :webApp:jsBrowserDevelopmentRun --no-configuration-cache --info)",
       "Bash(./gradlew :androidApp:assembleDebug --no-configuration-cache)",
-      "Bash(./gradlew :desktopApp:packageMsi --no-configuration-cache)"
+      "Bash(./gradlew :desktopApp:packageMsi --no-configuration-cache)",
+      "Bash(./gradlew :webApp:wasmJsBrowserDevelopmentRun *)",
+      "Bash(./gradlew :webApp:compileKotlinJs --console=plain)",
+      "Bash(./gradlew :shared:compileDebugKotlinAndroid :androidApp:compileDebugKotlin --console=plain)",
+      "Bash(./gradlew compileKotlinJvm compileKotlinJs compileKotlinWasmJs compileAndroidMain compileDebugKotlin compileKotlin --console=plain)",
+      "Bash(./gradlew.bat :webApp:jsBrowserDevelopmentRun --info)"
     ]
   }
 }

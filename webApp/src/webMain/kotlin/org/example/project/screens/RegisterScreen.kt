@@ -15,8 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.components.ErrorBanner
 import org.example.project.model.BillingCycle
-import org.example.project.model.SubscriptionPlan
-import org.example.project.model.SubscriptionType
+import org.example.project.model.MembershipPrice
 import org.example.project.navigation.Navigator
 import org.example.project.navigation.Route
 import org.example.project.theme.*
@@ -107,7 +106,6 @@ private fun PersonalInfoStep(vm: RegistrationViewModel) {
     var firstName by remember { mutableStateOf(s.firstName) }
     var lastName by remember { mutableStateOf(s.lastName) }
     var email by remember { mutableStateOf(s.email) }
-    var phone by remember { mutableStateOf(s.phone) }
     var password by remember { mutableStateOf(s.password) }
     var confirmPassword by remember { mutableStateOf(s.confirmPassword) }
 
@@ -119,7 +117,6 @@ private fun PersonalInfoStep(vm: RegistrationViewModel) {
                 OutlinedTextField(lastName, { lastName = it }, label = { Text("Last Name") }, modifier = Modifier.weight(1f))
             }
             OutlinedTextField(email, { email = it }, label = { Text("Email Address") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(phone, { phone = it }, label = { Text("Phone Number") }, modifier = Modifier.fillMaxWidth())
             HorizontalDivider()
             Text("Create Password", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
             OutlinedTextField(
@@ -136,7 +133,7 @@ private fun PersonalInfoStep(vm: RegistrationViewModel) {
             )
             Button(
                 onClick = {
-                    vm.updatePersonalInfo(firstName, lastName, email, phone, password, confirmPassword)
+                    vm.updatePersonalInfo(firstName, lastName, email, password, confirmPassword)
                     vm.goToSubscription()
                 },
                 modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -167,7 +164,7 @@ private fun SubscriptionStep(vm: RegistrationViewModel) {
                     plans.forEach { plan ->
                         PlanSelectCard(
                             plan = plan,
-                            isSelected = selected?.id == plan.id,
+                            isSelected = selected == plan,
                             onClick = { vm.selectPlan(plan) }
                         )
                     }
@@ -182,7 +179,7 @@ private fun SubscriptionStep(vm: RegistrationViewModel) {
 }
 
 @Composable
-private fun PlanSelectCard(plan: SubscriptionPlan, isSelected: Boolean, onClick: () -> Unit) {
+private fun PlanSelectCard(plan: MembershipPrice, isSelected: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(10.dp),
@@ -297,7 +294,7 @@ private fun PaymentStep(vm: RegistrationViewModel) {
 
 @Composable
 private fun ConfirmationStep(navigator: Navigator, vm: RegistrationViewModel) {
-    val member = vm.state.registeredMember
+    val user = vm.state.registeredUser
 
     Card(shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(2.dp)) {
         Column(
@@ -309,7 +306,7 @@ private fun ConfirmationStep(navigator: Navigator, vm: RegistrationViewModel) {
             Text("Welcome to SportClub!", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Primary)
             Spacer(Modifier.height(8.dp))
             Text(
-                "Your registration was successful${if (member != null) ", ${member.firstName}" else ""}!\nA confirmation email has been sent to ${member?.email ?: "your email address"}.",
+                "Your registration was successful${if (user != null) ", ${user.fullName}" else ""}!\nA confirmation email has been sent to ${user?.email ?: "your email address"}.",
                 fontSize = 15.sp, color = OnSurfaceVariant
             )
             Spacer(Modifier.height(24.dp))

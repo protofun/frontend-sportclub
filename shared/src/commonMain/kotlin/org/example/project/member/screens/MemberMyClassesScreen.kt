@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.member.navigation.MemberNavigator
+import org.example.project.util.todayDateString
 import org.example.project.viewmodel.MemberSessionViewModel
 
 @Composable
@@ -25,7 +26,7 @@ fun MemberMyClassesScreen(navigator: MemberNavigator, sessionVm: MemberSessionVi
         user?.let { sessionVm.loadEnrollments(it.userId) }
     }
 
-    val today = "2026-06-05"
+    val today = todayDateString()
     val upcoming = state.enrolledLessons.filter { it.startTime >= today }.sortedBy { it.startTime }
     val past = state.enrolledLessons.filter { it.startTime < today }.sortedByDescending { it.startTime }
 
@@ -47,6 +48,22 @@ fun MemberMyClassesScreen(navigator: MemberNavigator, sessionVm: MemberSessionVi
             modifier = Modifier.fillMaxSize().verticalScroll(scroll).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            state.error?.let { err ->
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(err, color = Color(0xFFC62828), fontSize = 13.sp, modifier = Modifier.weight(1f))
+                        TextButton(onClick = { sessionVm.dismissError() }) { Text("OK") }
+                    }
+                }
+            }
+
             if (state.isLoading) {
                 Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = Color(0xFF1565C0))
