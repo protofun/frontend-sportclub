@@ -1,0 +1,109 @@
+Calculating task graph as configuration cache cannot be reused because file 'webApp\build.gradle.kts' has changed.
+Type-safe project accessors is an incubating feature.
+Configuration 'jsNpmAggregated' was resolved during configuration time.
+This is a build performance and scalability issue.
+See https://github.com/gradle/gradle/issues/2298
+Run with --info for a stacktrace.
+Configuration 'jsTestNpmAggregated' was resolved during configuration time.
+This is a build performance and scalability issue.
+See https://github.com/gradle/gradle/issues/2298
+Run with --info for a stacktrace.
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :webApp:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :kotlinKotlinNpmCachesSetup
+> Task :shared:convertXmlValueResourcesForJsMain NO-SOURCE
+> Task :webApp:generateComposeResClass UP-TO-DATE
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webApp:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :kotlinRestoreYarnLock UP-TO-DATE
+> Task :shared:generateComposeResClass UP-TO-DATE
+> Task :webApp:copyNonXmlValueResourcesForCommonMain NO-SOURCE
+> Task :webApp:checkJsMainComposeLibrariesCompatibility
+> Task :shared:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :shared:checkJsMainComposeLibrariesCompatibility
+> Task :shared:copyNonXmlValueResourcesForJsMain NO-SOURCE
+> Task :webApp:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :webApp:convertXmlValueResourcesForJsMain NO-SOURCE
+> Task :webApp:kmpPartiallyResolvedDependenciesChecker
+> Task :webApp:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :webApp:copyNonXmlValueResourcesForJsMain NO-SOURCE
+> Task :webApp:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :webApp:unpackSkikoWasmRuntime UP-TO-DATE
+> Task :shared:jsPackageJson UP-TO-DATE
+> Task :webApp:prepareComposeResourcesTaskForCommonMain NO-SOURCE
+> Task :webApp:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForJsMain NO-SOURCE
+> Task :webApp:prepareComposeResourcesTaskForJsMain NO-SOURCE
+> Task :webApp:generateResourceAccessorsForCommonMain NO-SOURCE
+> Task :shared:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :webApp:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :shared:jsTestPackageJson UP-TO-DATE
+> Task :webApp:jsPackageJson UP-TO-DATE
+> Task :shared:generateResourceAccessorsForJsMain NO-SOURCE
+> Task :webApp:generateResourceAccessorsForJsMain NO-SOURCE
+> Task :webApp:assembleJsMainResources UP-TO-DATE
+> Task :webApp:generateActualResourceCollectorsForJsMain UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :webApp:jsResolveSelfResourcesCopyHierarchicalMultiplatformResources UP-TO-DATE
+> Task :shared:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :shared:assembleJsMainResources UP-TO-DATE
+> Task :shared:generateActualResourceCollectorsForJsMain UP-TO-DATE
+> Task :shared:jsCopyHierarchicalMultiplatformResources UP-TO-DATE
+> Task :shared:jsZipMultiplatformResourcesForPublication UP-TO-DATE
+> Task :webApp:jsResolveResourcesFromDependencies UP-TO-DATE
+> Task :webApp:jsAggregateResources UP-TO-DATE
+> Task :webApp:jsProcessResources UP-TO-DATE
+> Task :shared:jsPublicPackageJson UP-TO-DATE
+> Task :shared:compileKotlinJs UP-TO-DATE
+> Task :webApp:jsPublicPackageJson UP-TO-DATE
+> Task :webApp:compileKotlinJs UP-TO-DATE
+> Task :webApp:jsMainClasses UP-TO-DATE
+> Task :shared:jsTestPublicPackageJson UP-TO-DATE
+> Task :webApp:jsTestPackageJson
+> Task :webApp:jsTestPublicPackageJson
+> Task :kotlinPackageJsonUmbrella
+> Task :webApp:compileDevelopmentExecutableKotlinJs UP-TO-DATE
+> Task :webApp:jsDevelopmentExecutableCompileSync UP-TO-DATE
+> Task :rootPackageJson
+> Task :kotlinNodeJsSetup UP-TO-DATE
+> Task :kotlinYarnSetup UP-TO-DATE
+
+> Task :kotlinNpmInstall
+(node:31020) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+warning "workspace-aggregator-80b62289-223e-4e3b-b0f6-3743f771f7fa > Frontend-sportclub-webApp > webpack-dev-server > webpack-dev-middleware > memfs@4.57.6" has unmet peer dependency "tslib@2".
+warning Ignored scripts due to flag.
+
+> Task :kotlinStoreYarnLock UP-TO-DATE
+
+> Task :webApp:jsBrowserDevelopmentRun
+<i> [webpack-dev-server] Project is running at:
+<i> [webpack-dev-server] Loopback: http://localhost:8081/, http://[::1]:8081/
+<i> [webpack-dev-server] On Your Network (IPv4): http://172.31.112.1:8081/
+<i> [webpack-dev-server] On Your Network (IPv6): http://[fd5a:5445:4547:0:7e95:1cbf:4188:945f]:8081/
+<i> [webpack-dev-server] Content not from webpack is served from 'C:\Users\jaimy\AndroidStudioProjects\frontend-sportclub\build\js\packages\Frontend-sportclub-webApp\kotlin, C:\Users\jaimy\AndroidStudioProjects\frontend-sportclub\webApp\build\processedResources\js\main, C:\Users\jaimy\AndroidStudioProjects\frontend-sportclub' directory
+<i> [webpack-dev-middleware] wait until bundle finished: /
+asset webApp.js 42.1 MiB [emitted] (name: main)
+asset 6e23e5428398b92da386.wasm 8.25 MiB [emitted] [immutable] [from: kotlin/skiko.wasm] (auxiliary name: main)
+asset node_modules_ws_browser_js.js 1.75 KiB [emitted]
+runtime modules 32.3 KiB 15 modules
+modules by path ./kotlin/ 29 MiB (javascript) 8.25 MiB (asset)
+  modules with warnings 28.4 MiB [true warnings]
+    ./kotlin/Frontend-sportclub-webApp.js 1.52 MiB [built] [code generated] [16 warnings]
+    + 51 modules
+  modules by path ./kotlin/*.mjs 620 KiB
+    ./kotlin/skiko.mjs 501 KiB [built] [code generated]
+    ./kotlin/js-reexport-symbols.mjs 120 KiB [built] [code generated]
+  ./kotlin/skiko.wasm 8.25 MiB (asset) 42 bytes (javascript) [built] [code generated]
+modules by path ../../node_modules/ 506 KiB
+  modules by path ../../node_modules/webpack-dev-server/client/ 90.2 KiB 8 modules
+  modules by path ../../node_modules/webpack/hot/*.js 5.17 KiB
+    ../../node_modules/webpack/hot/dev-server.js 1.94 KiB [built] [code generated]
+    + 3 modules
+  + 4 modules
+webpack 5.101.3 compiled successfully in 4455 ms
