@@ -137,6 +137,15 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
     private data class WaitlistEntryDto(val position: Int, val lessonId: String)
 
     @Serializable
+    private data class LessonRosterEntryDto(
+        val reservationId: String,
+        val userId: String,
+        val name: String,
+        val email: String,
+        val status: String
+    )
+
+    @Serializable
     private data class ErrorResponseDto(val error: String? = null)
 
     private val errorJson = Json { ignoreUnknownKeys = true }
@@ -224,6 +233,11 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
     override fun logout() {
         authToken = null
         currentUserId = null
+    }
+
+    override fun restoreSession(token: String, userId: String) {
+        authToken = token
+        currentUserId = userId
     }
 
     override suspend fun registerMember(request: RegistrationRequest): LoginResponse {
@@ -478,8 +492,14 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
         }
     }
 
-    override suspend fun reserveLesson(lessonId: String, memberId: String) {
-        apiPostNoResponse("/reservations", ReservationRequestDto(lessonId))
+    @Serializable
+    private data class BikeDto(val id: String, val rowNumber: Int, val seatNumber: Int)
+
+    override suspend fun getAvailableBikes(lessonId: String): List<Bike> =
+        apiGet<List<BikeDto>>("/bikes/available/$lessonId").map { Bike(it.id, it.rowNumber, it.seatNumber) }
+
+    override suspend fun reserveLesson(lessonId: String, memberId: String, bikeId: String?) {
+        apiPostNoResponse("/reservations", ReservationRequestDto(lessonId, bikeId))
     }
 
     override suspend fun cancelReservation(lessonId: String, memberId: String) {
@@ -500,4 +520,13 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
     override suspend fun getMyWaitlist(memberId: String): List<String> {
         return apiGet<List<WaitlistEntryDto>>("/reservations/waitlist/me").map { it.lessonId }
     }
+
+    // ---- instructor operations ---------------------------------------------------------------
+
+    override suspend fun getMyLessons(): List<Lesson> = enrichLessons(apiGet("/lessons/my-lessons"))
+
+    override suspend fun getLessonRoster(lessonId: String): List<LessonRosterEntry> =
+        apiGet<List<LessonRosterEntryDto>>("/reservations/lesson/$lessonId").map {
+            LessonRosterEntry(it.reservationId, it.userId, it.name, it.email, it.status)
+        }
 }

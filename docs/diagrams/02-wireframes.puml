@@ -1,0 +1,128 @@
+@startsalt 02a-wireframe-login
+title Member App - Inloggen
+{
+  <b>SC  SportClub
+  ..
+  Welcome back
+  Sign in to your SportClub account
+  ..
+  Email      | "member@sportclub.nl   "
+  Password   | "**********            "
+  ..
+  [ Sign In ]
+  ..
+  {* Demo login:
+  member@sportclub.nl / any password
+  instructor@sportclub.nl / any password }
+}
+@endsalt
+
+@startsalt 02b-wireframe-home
+title Member App - Home (rol: Lid)
+{
+  {SI
+  SC | <b>Hallo, Jaimy
+  } | {
+  🏠 Home | 📅 Schedule | 🏋️ My Classes | 💳 Membership | 👤 Profile
+  }
+  ..
+  { <b>Active membership
+  Unlimited - Yearly
+  Status: Active
+  }
+  ..
+  { <b>Upcoming lesson
+  Spinning - Hall 3
+  Today 18:00 - 45 min
+  [ View schedule ] }
+}
+@endsalt
+
+@startsalt 02c-wireframe-schedule
+title Member App - Lesrooster & reserveren
+{
+  {SI
+  SC | <b>Schedule
+  } | {
+  🏠 Home | 📅 Schedule | 🏋️ My Classes | 💳 Membership | 👤 Profile
+  }
+  ..
+  < Mon | Tue | Wed | Thu | Fri >
+  ..
+  {#
+  Spinning  | Hall 3 | 18:00 - 45 min | 12/24 | [Reserve]
+  Yoga      | Hall 1 | 19:00 - 60 min | 24/24 | [Join waitlist]
+  Bootcamp  | Outdoor | 20:00 - 60 min | 8/20  | [Reserve]
+  }
+}
+@endsalt
+
+@startsalt 02d-wireframe-subscription
+title Member App - Membership (huidig + nieuwe functionaliteit)
+{
+  {SI
+  SC | <b>Membership
+  } | {
+  🏠 Home | 📅 Schedule | 🏋️ My Classes | 💳 Membership | 👤 Profile
+  }
+  ..
+  {! Your subscription is expiring
+  Your yearly Unlimited plan ends on 15-08-2026 (in 6 weeks).
+  [ Buy new subscription ] }
+  ..
+  { <b>Current plan: Unlimited - Yearly
+  Status: [Active]
+  Started: 15-08-2025  (10 months ago)
+  Ends:    15-08-2026  (6 weeks left)
+  Billing: Yearly - EUR 549,00 / year
+  }
+  ..
+  { <b>Plan benefits
+  * Unlimited access to all classes
+  * Access to all locations
+  }
+  ..
+  { <b>Manage subscription
+  [ Cancel subscription ] (alleen bij Monthly)
+  [ Upgrade to Unlimited ] (alleen bij Basic)
+  [ Buy next subscription ]
+  }
+  ..
+  { <b>No active subscription? Choose a plan
+  ( ) Basic - Monthly    EUR 29,00 / month
+  ( ) Basic - Yearly     EUR 299,00 / year
+  ( ) Unlimited - Monthly EUR 55,00 / month
+  ( ) Unlimited - Yearly  EUR 549,00 / year
+  [ Subscribe ]
+  }
+}
+@endsalt
+
+@startsalt 02e-wireframe-instructor-lessons
+title Member App - My Lessons (rol: Instructor)
+{
+  {SI
+  SC | <b>My Lessons
+  } | {
+  📋 My Lessons | 👤 Profile
+  }
+  ..
+  <b>Upcoming
+  {
+  18:00 | Spinning - Hall 3 - 45 min | 12/24 enrolled | v
+  {
+   <b>Registered members (12)
+   {#
+   A | Anna de Vries     | anna@mail.com     | Reserved
+   B | Bram Janssen      | bram@mail.com     | Reserved
+   C | Chantal Pietersen | chantal@mail.com  | Reserved
+   }
+  }
+  }
+  ..
+  <b>Past
+  {
+  09:00 | Yoga - Hall 1 - 60 min | 20/24 enrolled | >
+  }
+}
+@endsalt

@@ -1,41 +1,81 @@
-This is a Kotlin Multiplatform project targeting Android, Web, Desktop (JVM).
+# Frontend SportClub
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
-
-### Running the apps
-
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
-
-- Android app: `./gradlew :androidApp:assembleDebug`
-- Desktop app:
-  - Hot reload: `./gradlew :desktopApp:hotRun --auto`
-  - Standard run: `./gradlew :desktopApp:run`
-- Web app:
-  - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
-  - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
-
-### Running tests
-
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
-
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- Desktop tests: `./gradlew :shared:jvmTest`
-- Web tests:
-  - Wasm target: `./gradlew :shared:wasmJsTest`
-  - JS target: `./gradlew :shared:jsTest`
+Kotlin Multiplatform project met een **web-app**, **Android-app** en **desktop-app** voor een sportclub. Gebouwd met Compose Multiplatform.
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+## Vereisten
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+- **JDK 17+**
+- **Android Studio** (voor de Android-app)
+- **Node.js** (voor de web-app, wordt automatisch beheerd door Gradle)
+- De **backend** moet draaien op `http://localhost:8080` voordat je de apps opstart
+
+---
+
+## Opstarten
+
+### Web-app
+
+**Windows (PowerShell):**
+```powershell
+.\gradlew.bat :webApp:jsBrowserDevelopmentRun
+```
+
+**Mac/Linux of Git Bash:**
+```bash
+./gradlew :webApp:jsBrowserDevelopmentRun
+```
+
+Open daarna handmatig de browser op **http://localhost:8081**
+
+- Standaard zie je het **medewerkers/admin portaal**
+- Ga naar `http://localhost:8081/#/app` voor de **leden- en instructeurs-app**
+
+> De terminal toont `BUILD FAILED` wanneer je de server stopt met Ctrl+C — dit is normaal en geen echte fout.
+
+---
+
+### Android-app
+
+Open het project in **Android Studio** en klik op **Run**, of via de terminal:
+
+```bash
+./gradlew :androidApp:assembleDebug
+```
+
+Installeer de gegenereerde APK op een emulator of fysiek apparaat.
+
+> De Android-app verbindt automatisch met `http://10.0.2.2:8080` (de emulator-alias voor localhost).
+
+---
+
+### Desktop-app
+
+```bash
+./gradlew :desktopApp:run
+```
+
+Of met hot reload (herstart automatisch bij codewijzigingen):
+
+```bash
+./gradlew :desktopApp:hotRun --auto
+```
+
+---
+
+## Projectstructuur
+
+| Map | Inhoud |
+|---|---|
+| `shared/` | Gedeelde code (models, ViewModels, API-client) |
+| `webApp/` | Browser-app (Kotlin/JS + Compose) |
+| `androidApp/` | Android-app |
+| `desktopApp/` | Desktop-app (JVM) |
+
+---
+
+## Backend
+
+Alle apps verwachten de backend op **`http://localhost:8080/api/v1`**.  
+Zorg dat de backend actief is voordat je een app opstart.

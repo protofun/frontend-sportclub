@@ -3,6 +3,8 @@ package org.example.project.screens
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -301,7 +303,7 @@ private fun ConfirmationStep(navigator: Navigator, vm: RegistrationViewModel) {
             modifier = Modifier.padding(32.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("🎉", fontSize = 64.sp)
+            Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(64.dp), tint = Success)
             Spacer(Modifier.height(16.dp))
             Text("Welcome to SportClub!", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Primary)
             Spacer(Modifier.height(8.dp))

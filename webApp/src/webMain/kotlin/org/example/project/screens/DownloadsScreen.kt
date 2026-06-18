@@ -3,6 +3,8 @@ package org.example.project.screens
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,7 +44,12 @@ fun DownloadsScreen() {
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("📱", fontSize = 48.sp)
+                Icon(
+                    Icons.Default.PhoneAndroid,
+                    contentDescription = null,
+                    modifier = Modifier.size(56.dp),
+                    tint = Color.White
+                )
                 Spacer(Modifier.height(12.dp))
                 Text(
                     "Get the SportClub App",
@@ -66,21 +74,19 @@ fun DownloadsScreen() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Web
                 PlatformCard(
-                    icon = "🌐",
+                    icon = Icons.Default.Language,
                     platform = "Web",
                     description = "No download needed. Use SportClub directly in your browser — fully featured.",
                     buttonLabel = "Open Web App",
                     badge = "Any browser",
                     badgeColor = Color(0xFF1565C0),
                     modifier = Modifier.weight(1f),
-                    onClick = { window.location.href = "/" }
+                    onClick = { window.location.hash = "#/app" }
                 )
 
-                // Android
                 PlatformCard(
-                    icon = "🤖",
+                    icon = Icons.Default.Android,
                     platform = "Android",
                     description = "Install the SportClub app on your Android phone or tablet. Enable 'Install from unknown sources' in settings.",
                     buttonLabel = "Download APK (13 MB)",
@@ -90,9 +96,8 @@ fun DownloadsScreen() {
                     onClick = { triggerDownload("SportClub-android.apk", "/downloads/SportClub-android.apk") }
                 )
 
-                // Windows
                 PlatformCard(
-                    icon = "🪟",
+                    icon = Icons.Default.Computer,
                     platform = "Windows",
                     description = "Install the SportClub desktop app on Windows using the MSI installer. Run the installer and follow the steps.",
                     buttonLabel = "Download MSI (61 MB)",
@@ -116,7 +121,7 @@ fun DownloadsScreen() {
                         horizontalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         InstructionBlock(
-                            icon = "🤖",
+                            icon = Icons.Default.Android,
                             title = "Android",
                             steps = listOf(
                                 "Download the APK via the button above",
@@ -127,7 +132,7 @@ fun DownloadsScreen() {
                             modifier = Modifier.weight(1f)
                         )
                         InstructionBlock(
-                            icon = "🪟",
+                            icon = Icons.Default.Computer,
                             title = "Windows",
                             steps = listOf(
                                 "Download the MSI installer via the button above",
@@ -147,10 +152,10 @@ fun DownloadsScreen() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                AppFeatureCard("📅", "Class Schedule", "Browse and reserve spots in upcoming classes day by day", Modifier.weight(1f))
-                AppFeatureCard("🏋️", "My Classes", "View your upcoming and past classes in one place", Modifier.weight(1f))
-                AppFeatureCard("💳", "Membership", "See your subscription status and upgrade at any time", Modifier.weight(1f))
-                AppFeatureCard("⏳", "Waitlist", "Join the waitlist for full classes and get a spot when one opens", Modifier.weight(1f))
+                AppFeatureCard(Icons.Default.CalendarMonth, "Class Schedule", "Browse and reserve spots in upcoming classes day by day", Modifier.weight(1f))
+                AppFeatureCard(Icons.Default.FitnessCenter, "My Classes", "View your upcoming and past classes in one place", Modifier.weight(1f))
+                AppFeatureCard(Icons.Default.CreditCard, "Membership", "See your subscription status and upgrade at any time", Modifier.weight(1f))
+                AppFeatureCard(Icons.Default.HourglassBottom, "Waitlist", "Join the waitlist for full classes and get a spot when one opens", Modifier.weight(1f))
             }
         }
     }
@@ -158,7 +163,7 @@ fun DownloadsScreen() {
 
 @Composable
 private fun PlatformCard(
-    icon: String,
+    icon: ImageVector,
     platform: String,
     description: String,
     buttonLabel: String,
@@ -178,7 +183,7 @@ private fun PlatformCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(icon, fontSize = 40.sp)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(48.dp), tint = badgeColor)
             Text(platform, fontWeight = FontWeight.Bold, fontSize = 20.sp)
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(20.dp))
@@ -204,10 +209,10 @@ private fun PlatformCard(
 }
 
 @Composable
-private fun InstructionBlock(icon: String, title: String, steps: List<String>, modifier: Modifier = Modifier) {
+private fun InstructionBlock(icon: ImageVector, title: String, steps: List<String>, modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(icon, fontSize = 20.sp)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = Primary)
             Text(title, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
         }
         steps.forEachIndexed { i, step ->
@@ -220,7 +225,7 @@ private fun InstructionBlock(icon: String, title: String, steps: List<String>, m
 }
 
 @Composable
-private fun AppFeatureCard(icon: String, title: String, desc: String, modifier: Modifier = Modifier) {
+private fun AppFeatureCard(icon: ImageVector, title: String, desc: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
@@ -228,7 +233,7 @@ private fun AppFeatureCard(icon: String, title: String, desc: String, modifier: 
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(icon, fontSize = 30.sp)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(30.dp), tint = Primary)
             Spacer(Modifier.height(8.dp))
             Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.Center)
             Spacer(Modifier.height(6.dp))

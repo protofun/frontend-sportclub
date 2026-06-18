@@ -1,0 +1,249 @@
+@startuml 05-class-diagram-frontend
+title SportClub - Class Diagram (Frontend / Shared module)
+hide empty members
+skinparam classAttributeIconSize 0
+
+' =====================================================================
+' API LAAG
+' =====================================================================
+interface SportClubApiService {
+  +login(request: LoginRequest): LoginResponse
+  +registerMember(request: RegistrationRequest): LoginResponse
+  +logout()
+  +getMember(id: String): Member
+  +updateProfile(username: String?, profileImageUrl: String?): Member
+  +getMembershipPrices(): List<MembershipPrice>
+  +subscribeMembership(type, billingCycle, startDate): Membership
+  +upgradeMembership(membershipId: String): Membership
+  +getLessons(startDate, endDate): List<Lesson>
+  +getMemberEnrollments(memberId: String): List<Lesson>
+  +reserveLesson(lessonId, memberId)
+  +cancelReservation(lessonId, memberId)
+  +joinWaitlist(lessonId, memberId)
+  +leaveWaitlist(lessonId, memberId)
+  +getMyWaitlist(memberId): List<String>
+  +getMyLessons(): List<Lesson>
+  +getLessonRoster(lessonId: String): List<LessonRosterEntry>
+}
+
+class RealApiService {
+  -httpClient: HttpClient
+  -authToken: String?
+  -currentUserId: String?
+}
+
+class MockApiService {
+  -members: MutableList<Member>
+  -lessons: MutableList<Lesson>
+  -currentUserId: String?
+}
+
+SportClubApiService <|.. RealApiService
+SportClubApiService <|.. MockApiService
+
+' =====================================================================
+' VIEWMODEL LAAG (MVVM)
+' =====================================================================
+class AuthState {
+  +isLoading: Boolean
+  +error: String?
+  +currentUser: LoginResponse?
+  +isAuthenticated: Boolean
+}
+class AuthViewModel {
+  +state: AuthState
+  +login(email, password, requiredRole: UserRole?)
+  +logout()
+  +clearError()
+}
+AuthViewModel *-- AuthState
+AuthViewModel --> SportClubApiService
+
+class MemberSessionState {
+  +isLoading: Boolean
+  +error: String?
+  +memberInfo: Member?
+  +enrolledLessons: List<Lesson>
+  +enrolledLessonIds: Set<String>
+  +waitlistLessonIds: Set<String>
+  +isSavingProfile: Boolean
+}
+class MemberSessionViewModel {
+  +state: MemberSessionState
+  +loadMemberInfo(memberId)
+  +loadEnrollments(memberId)
+  +loadWaitlist(memberId)
+  +reserve(lessonId, memberId)
+  +cancel(lessonId, memberId)
+  +joinWaitlist(lessonId, memberId)
+  +leaveWaitlist(lessonId, memberId)
+  +updateProfile(username, profileImageUrl)
+  +subscribe(memberId, type, billingCycle, startDate)
+  +upgrade(memberId, membershipId)
+  +dismissError()
+}
+MemberSessionViewModel *-- MemberSessionState
+MemberSessionViewModel --> SportClubApiService
+
+class InstructorLessonsState {
+  +isLoading: Boolean
+  +error: String?
+  +lessons: List<Lesson>
+  +selectedLessonId: String?
+  +isLoadingRoster: Boolean
+  +roster: List<LessonRosterEntry>
+}
+class InstructorLessonsViewModel {
+  +state: InstructorLessonsState
+  +loadMyLessons()
+  +selectLesson(lessonId)
+  +dismissError()
+}
+InstructorLessonsViewModel *-- InstructorLessonsState
+InstructorLessonsViewModel --> SportClubApiService
+
+' =====================================================================
+' NAVIGATIE
+' =====================================================================
+class MemberNavigator {
+  +currentRoute: MemberRoute
+  +currentUser: LoginResponse?
+  +isAuthenticated: Boolean
+  +navigate(route: MemberRoute)
+  +login(user: LoginResponse)
+  +logout()
+}
+abstract class MemberRoute
+class Home
+class Schedule
+class MyClasses
+class Subscription
+class Profile
+class InstructorLessons
+MemberRoute <|-- Home
+MemberRoute <|-- Schedule
+MemberRoute <|-- MyClasses
+MemberRoute <|-- Subscription
+MemberRoute <|-- Profile
+MemberRoute <|-- InstructorLessons
+MemberNavigator --> MemberRoute
+
+' =====================================================================
+' SCHERMEN (View) -- gebruiken hun ViewModel + Navigator
+' =====================================================================
+class MemberLoginScreen <<@Composable>>
+class MemberHomeScreen <<@Composable>>
+class MemberScheduleScreen <<@Composable>>
+class MemberMyClassesScreen <<@Composable>>
+class MemberSubscriptionScreen <<@Composable>>
+class MemberProfileScreen <<@Composable>>
+class InstructorLessonsScreen <<@Composable>>
+
+MemberLoginScreen --> MemberNavigator
+MemberLoginScreen --> AuthViewModel
+MemberHomeScreen --> MemberNavigator
+MemberHomeScreen --> MemberSessionViewModel
+MemberScheduleScreen --> MemberSessionViewModel
+MemberMyClassesScreen --> MemberSessionViewModel
+MemberSubscriptionScreen --> MemberSessionViewModel
+MemberProfileScreen --> MemberSessionViewModel
+MemberProfileScreen --> AuthViewModel
+InstructorLessonsScreen --> MemberNavigator
+InstructorLessonsScreen --> InstructorLessonsViewModel
+
+' =====================================================================
+' MODEL (domain / DTO, UI-facing)
+' =====================================================================
+class Member {
+  +id: String
+  +email: String
+  +username: String?
+  +profileImageUrl: String?
+  +role: UserRole
+  +activeMembership: Membership?
+  +fullName: String
+}
+class Membership {
+  +id: String
+  +userId: String
+  +type: MembershipType
+  +billingCycle: BillingCycle
+  +startDate: String
+  +endDate: String?
+  +status: MembershipStatus
+  +planName: String
+}
+class MembershipPrice {
+  +type: MembershipType
+  +billingCycle: BillingCycle
+  +priceInCents: Int
+  +priceEuros: Double
+  +name: String
+  +description: String
+}
+class Lesson {
+  +id: String
+  +workoutId: String
+  +workoutName: String
+  +instructorId: String?
+  +instructorName: String?
+  +locationName: String
+  +startTime: String
+  +durationMinutes: Int
+  +maxCapacity: Int
+  +enrolledCount: Int
+  +waitlistCount: Int
+  +availableSpots: Int
+  +isFull: Boolean
+}
+class LessonRosterEntry {
+  +reservationId: String
+  +userId: String
+  +name: String
+  +email: String
+  +status: String
+}
+class LoginResponse {
+  +token: String
+  +userId: String
+  +role: UserRole
+  +fullName: String
+  +email: String
+}
+
+enum UserRole {
+  MEMBER
+  INSTRUCTOR
+  STAFF
+}
+enum MembershipType {
+  BASIC
+  UNLIMITED
+}
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+Member "1" --> "0..1" Membership : activeMembership
+Member --> UserRole
+Membership --> MembershipType
+Membership --> BillingCycle
+Membership --> MembershipStatus
+MembershipPrice --> MembershipType
+MembershipPrice --> BillingCycle
+LoginResponse --> UserRole
+
+SportClubApiService ..> Member
+SportClubApiService ..> Membership
+SportClubApiService ..> MembershipPrice
+SportClubApiService ..> Lesson
+SportClubApiService ..> LessonRosterEntry
+SportClubApiService ..> LoginResponse
+@enduml

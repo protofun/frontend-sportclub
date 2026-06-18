@@ -71,4 +71,6 @@ class ScheduleViewModel(private val api: SportClubApiService) {
     fun setFilter(workoutId: String?) {
         state = state.copy(filterWorkoutId = workoutId)
     }
+
+    suspend fun getAvailableBikes(lessonId: String) = api.getAvailableBikes(lessonId)
 }

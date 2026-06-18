@@ -1,0 +1,99 @@
+@startuml 01-use-case-diagram
+left to right direction
+skinparam packageStyle rect
+title SportClub - Use Case Diagram
+
+actor "Lid\n(Member)" as Member
+actor "Instructeur\n(Instructor)" as Instructor
+actor "Medewerker\n(Employee / Staff)" as Staff
+actor "Notificatie-systeem\n(achtergrondproces)" as System
+
+rectangle "SportClub platform\n(Compose Multiplatform app + Ktor backend)" {
+
+  ' --- Account & sessie ---
+  usecase "Inloggen" as UC_Login
+  usecase "Registreren\n(incl. eerste abonnement)" as UC_Register
+  usecase "Profiel beheren" as UC_Profile
+  usecase "Uitloggen" as UC_Logout
+
+  ' --- Lid: rooster & reserveren ---
+  usecase "Lesrooster bekijken" as UC_Schedule
+  usecase "Les reserveren" as UC_Reserve
+  usecase "Reservering annuleren" as UC_CancelReservation
+  usecase "Op wachtlijst plaatsen" as UC_JoinWaitlist
+  usecase "Wachtlijst verlaten" as UC_LeaveWaitlist
+  usecase "Mijn lessen / inschrijvingen bekijken" as UC_MyClasses
+
+  ' --- Lid: abonnement ---
+  usecase "Abonnementsstatus bekijken\n(type, looptijd, resterende tijd)" as UC_ViewMembership
+  usecase "Abonnement upgraden\n(Basic -> Unlimited, naar rato verrekend)" as UC_Upgrade
+  usecase "Maandabonnement opzeggen" as UC_CancelSub
+  usecase "Nieuw abonnement aanschaffen\n(vóór afloop huidige abonnement)" as UC_NewSub
+  usecase "Verloop-notificatie ontvangen\n(6 weken voor einde jaarabonnement)" as UC_ExpiryNotif
+
+  ' --- Instructeur ---
+  usecase "Eigen lessen bekijken" as UC_MyLessons
+  usecase "Deelnemerslijst per les inzien" as UC_Roster
+
+  ' --- Staff / beheer ---
+  usecase "Workouts beheren\n(CRUD)" as UC_Workouts
+  usecase "Lesrooster beheren\n(CRUD, herhalingen)" as UC_ManageLessons
+  usecase "Instructeurs beheren" as UC_Instructors
+  usecase "Leden beheren" as UC_Members
+  usecase "Bezetting & dashboard-statistieken bekijken" as UC_Stats
+}
+
+' --- Member relations ---
+Member --> UC_Login
+Member --> UC_Register
+Member --> UC_Logout
+Member --> UC_Profile
+Member --> UC_Schedule
+Member --> UC_Reserve
+Member --> UC_CancelReservation
+Member --> UC_MyClasses
+Member --> UC_ViewMembership
+Member --> UC_Upgrade
+Member --> UC_CancelSub
+Member --> UC_NewSub
+Member --> UC_ExpiryNotif
+
+UC_Reserve .> UC_JoinWaitlist : <<extend>>\n(les vol)
+Member --> UC_LeaveWaitlist
+UC_Upgrade ..> UC_ViewMembership : <<include>>
+UC_CancelSub ..> UC_ViewMembership : <<include>>
+UC_NewSub ..> UC_ViewMembership : <<include>>
+
+' --- Instructor relations ---
+Instructor --> UC_Login
+Instructor --> UC_Logout
+Instructor --> UC_Profile
+Instructor --> UC_MyLessons
+Instructor --> UC_Roster
+UC_Roster ..> UC_MyLessons : <<include>>
+
+' --- Staff relations ---
+Staff --> UC_Login
+Staff --> UC_Logout
+Staff --> UC_Workouts
+Staff --> UC_ManageLessons
+Staff --> UC_Instructors
+Staff --> UC_Members
+Staff --> UC_Stats
+
+' --- System relations ---
+System --> UC_ExpiryNotif : genereert\n(6 weken voor einddatum)
+
+note right of UC_Upgrade
+  Alleen uitbreiden (Basic -> Unlimited),
+  nooit downgraden.
+  - Maandelijks: prijs gaat omhoog vanaf nu
+  - Jaarlijks: verschil wordt naar rato
+    bijbetaald voor de resterende periode
+end note
+
+note right of UC_CancelSub
+  Jaarabonnementen kunnen NIET
+  worden opgezegd of teruggedraaid.
+end note
+@enduml

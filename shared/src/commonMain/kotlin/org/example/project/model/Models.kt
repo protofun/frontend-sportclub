@@ -109,6 +109,13 @@ object ReferenceLocations {
 }
 
 @Serializable
+data class Bike(
+    val id: String,
+    val rowNumber: Int,
+    val seatNumber: Int
+)
+
+@Serializable
 data class Instructor(
     val id: String,
     val firstName: String,
@@ -200,6 +207,15 @@ data class MemberEnrollment(
     val memberName: String,
     val status: EnrollmentStatus,
     val checkedIn: Boolean = false
+)
+
+@Serializable
+data class LessonRosterEntry(
+    val reservationId: String,
+    val userId: String,
+    val name: String,
+    val email: String,
+    val status: String
 )
 
 @Serializable

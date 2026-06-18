@@ -1,0 +1,269 @@
+@startuml 06-class-diagram-backend
+title SportClub - Class Diagram (Backend / Ktor)
+hide empty members
+skinparam classAttributeIconSize 0
+
+' =====================================================================
+' DOMAIN MODELS
+' =====================================================================
+class User {
+  +id: UUID
+  +email: String
+  +passwordHash: String
+  +role: UserRole
+  +username: String?
+  +profileImageUrl: String?
+  +specialties: List<String>
+  +createdAt: LocalDateTime
+}
+
+class Membership {
+  +id: UUID
+  +userId: UUID
+  +type: MembershipType
+  +billingCycle: BillingCycle
+  +startDate: LocalDateTime
+  +endDate: LocalDateTime
+  +status: MembershipStatus
+}
+
+class Lesson {
+  +id: UUID
+  +workoutId: UUID
+  +instructorId: UUID?
+  +locationId: UUID
+  +startTime: LocalDateTime
+  +durationMinutes: Int
+  +capacity: Int
+}
+
+class Reservation {
+  +id: UUID
+  +lessonId: UUID
+  +userId: UUID
+  +bikeId: UUID?
+  +status: ReservationStatus
+  +createdAt: LocalDateTime
+}
+
+class WaitlistEntry {
+  +id: UUID
+  +lessonId: UUID
+  +userId: UUID
+  +position: Int
+  +createdAt: LocalDateTime
+}
+
+class Notification {
+  +id: UUID
+  +userId: UUID
+  +type: NotificationType
+  +message: String
+  +isRead: Boolean
+  +createdAt: LocalDateTime
+}
+
+enum UserRole {
+  Member
+  Instructor
+  Employee
+}
+enum MembershipType {
+  Basic
+  Unlimited
+}
+enum BillingCycle {
+  Monthly
+  Yearly
+}
+enum MembershipStatus {
+  Active
+  Cancelled
+  Expired
+}
+enum ReservationStatus {
+  Reserved
+  Cancelled
+  Attended
+}
+enum NotificationType {
+  LessonSpotAvailable
+  MembershipExpiring
+}
+
+User --> UserRole
+Membership --> MembershipType
+Membership --> BillingCycle
+Membership --> MembershipStatus
+Membership "0..*" --> "1" User : userId
+Reservation --> ReservationStatus
+Reservation "0..*" --> "1" User : userId
+Reservation "0..*" --> "1" Lesson : lessonId
+WaitlistEntry "0..*" --> "1" Lesson : lessonId
+WaitlistEntry "0..*" --> "1" User : userId
+Notification --> NotificationType
+Notification "0..*" --> "1" User : userId
+Lesson "0..*" --> "0..1" User : instructorId
+
+' =====================================================================
+' REPOSITORIES (interface + 1 implementatie als voorbeeld)
+' =====================================================================
+interface IUserRepository {
+  +findById(id: UUID): User?
+  +findByEmail(email: String): User?
+  +existsByEmail(email: String): Boolean
+  +create(user: User): User
+  +update(user: User): User
+}
+class UserRepositoryImpl
+IUserRepository <|.. UserRepositoryImpl
+UserRepositoryImpl --> User
+
+interface IMembershipRepository {
+  +findById(id: UUID): Membership?
+  +findActiveByUserId(userId: UUID): Membership?
+  +findByUserId(userId: UUID): List<Membership>
+  +create(membership: Membership): Membership
+  +update(membership: Membership): Membership
+}
+class MembershipRepositoryImpl
+IMembershipRepository <|.. MembershipRepositoryImpl
+MembershipRepositoryImpl --> Membership
+
+interface ILessonRepository {
+  +findById(id: UUID): Lesson?
+  +getReservationCount(lessonId: UUID): Int
+}
+interface IReservationRepository {
+  +findById(id: UUID): Reservation?
+  +findByUserId(userId: UUID): List<Reservation>
+  +findByLessonId(lessonId: UUID): List<Reservation>
+  +findAnyByLessonAndUser(lessonId, userId): Reservation?
+  +countActiveReservationsThisWeek(userId): Int
+  +findAttendedByUserIdLastYear(userId): List<Reservation>
+  +create(reservation: Reservation): Reservation
+  +update(reservation: Reservation): Reservation
+}
+interface IWaitlistRepository {
+  +findByLessonId(lessonId: UUID): List<WaitlistEntry>
+  +findByUserId(userId: UUID): List<WaitlistEntry>
+  +findByLessonAndUser(lessonId, userId): WaitlistEntry?
+  +getNextPosition(lessonId: UUID): Int
+  +create(entry: WaitlistEntry): WaitlistEntry
+  +delete(id: UUID)
+}
+interface INotificationRepository {
+  +create(notification: Notification): Notification
+  +findByUserId(userId: UUID): List<Notification>
+}
+
+' =====================================================================
+' SERVICES
+' =====================================================================
+class AuthService {
+  -jwtSecret: String
+  -jwtIssuer: String
+  -jwtAudience: String
+  +register(request: RegisterRequest): AuthResponse
+  +login(request: LoginRequest): AuthResponse
+  -generateToken(user: User): String
+}
+AuthService --> IUserRepository
+
+class MembershipService {
+  +getActiveMembership(userId): MembershipResponse?
+  +getMembershipHistory(userId): List<MembershipResponse>
+  +createMembership(userId, type, billingCycle, startDate): MembershipResponse
+  +cancelMembership(membershipId): MembershipResponse
+  +upgradeMembership(membershipId): MembershipResponse
+  +getPrice(type, billingCycle): Int
+}
+MembershipService --> IMembershipRepository
+MembershipService --> IUserRepository
+MembershipService --> EmailService
+
+class ReservationService {
+  +reserveLesson(userId, lessonId, bikeId?): ReservationResponse
+  +cancelReservation(reservationId): ReservationResponse
+  +getReservationsForUser(userId): List<ReservationResponse>
+  +getAttendanceHistoryForUser(userId): List<ReservationResponse>
+  +joinWaitlist(userId, lessonId): WaitlistEntry
+  +leaveWaitlist(userId, lessonId)
+  +getWaitlistForUser(userId): List<WaitlistEntry>
+  +getLessonRoster(lessonId, requesterId, requesterRole): List<LessonRosterEntryResponse>
+}
+ReservationService --> IReservationRepository
+ReservationService --> ILessonRepository
+ReservationService --> IMembershipRepository
+ReservationService --> IWaitlistRepository
+ReservationService --> INotificationRepository
+ReservationService --> IUserRepository
+
+class EmailService {
+  +sendMembershipConfirmation(toEmail, type, billingCycle, priceInCents, startDate, endDate)
+}
+
+class LessonService
+class WorkoutService
+class UserService
+
+' =====================================================================
+' ROUTES (controllers)
+' =====================================================================
+class AuthRoutes <<Route>>
+class MembershipRoutes <<Route>>
+class ReservationRoutes <<Route>>
+class LessonRoutes <<Route>>
+class UserRoutes <<Route>>
+class WorkoutRoutes <<Route>>
+
+AuthRoutes --> AuthService
+MembershipRoutes --> MembershipService
+ReservationRoutes --> ReservationService
+LessonRoutes --> LessonService
+UserRoutes --> UserService
+WorkoutRoutes --> WorkoutService
+
+' =====================================================================
+' DTO's (request/response, voorbeeld membership + roster)
+' =====================================================================
+class LoginRequest {
+  +email: String
+  +password: String
+}
+class AuthResponse {
+  +token: String
+  +userId: String
+  +role: String
+  +email: String
+}
+class CreateMembershipRequest {
+  +type: String
+  +billingCycle: String
+  +startDate: String
+}
+class MembershipResponse {
+  +id: String
+  +userId: String
+  +type: String
+  +billingCycle: String
+  +startDate: String
+  +endDate: String
+  +status: String
+}
+class LessonRosterEntryResponse {
+  +reservationId: String
+  +userId: String
+  +name: String
+  +email: String
+  +status: String
+}
+
+AuthRoutes ..> LoginRequest
+AuthRoutes ..> AuthResponse
+MembershipRoutes ..> CreateMembershipRequest
+MembershipRoutes ..> MembershipResponse
+ReservationRoutes ..> LessonRosterEntryResponse
+MembershipService ..> MembershipResponse
+ReservationService ..> LessonRosterEntryResponse
+@enduml

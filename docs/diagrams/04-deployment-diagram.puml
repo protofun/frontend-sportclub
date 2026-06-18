@@ -1,0 +1,57 @@
+@startuml 04-deployment-diagram
+title SportClub - Deployment Diagram
+skinparam nodeStyle rectangle
+
+node "Android-toestel" as androidDevice {
+  artifact "SportClub Member/Instructor App\n(androidApp, .apk)\nCompose Multiplatform UI -> MemberApp()" as androidApk
+}
+
+node "Desktop (Windows / macOS / Linux)" as desktopDevice {
+  artifact "SportClub Desktop App\n(desktopApp, JVM, Compose Desktop)\nCompose Multiplatform UI -> MemberApp()" as desktopJar
+}
+
+node "Werkstation met webbrowser" as browserDevice {
+  artifact "SportClub Web App\n(webApp, Kotlin/Wasm-JS via Webpack,\nport 8081 in dev)" as webBundle
+  note right of webBundle
+    Twee onderdelen, gescheiden via hash-routing:
+    - "/"      -> SportClubWebApp (staff portal)
+    - "#/app"  -> MemberApp (leden/instructeurs,
+                  zelfde shared-module als
+                  android/desktop)
+  end note
+}
+
+node "Applicatieserver" as appServer {
+  component "Ktor Backend (JVM, embedded Netty)\nhttp://<host>:8080" as backend {
+    component "/api/v1/auth"        as r_auth
+    component "/api/v1/users"       as r_users
+    component "/api/v1/workouts"    as r_workouts
+    component "/api/v1/lessons"     as r_lessons
+    component "/api/v1/reservations" as r_reservations
+    component "/api/v1/memberships" as r_memberships
+    component "/health"             as r_health
+  }
+}
+
+database "PostgreSQL database" as db {
+  component "users, memberships, lessons,\nreservations, waitlist_entries,\nnotifications, workouts, ..." as tables
+}
+
+node "SMTP-server" as smtp {
+  component "EmailService\n(bevestigingsmails abonnement)" as mail
+}
+
+androidApk  ..> backend : HTTPS/JSON\n(Ktor HttpClient,\nAuthorization: Bearer <JWT>)
+desktopJar  ..> backend : HTTPS/JSON\n(Ktor HttpClient,\nAuthorization: Bearer <JWT>)
+webBundle   ..> backend : HTTPS/JSON\n(Ktor HttpClient,\nAuthorization: Bearer <JWT>)
+
+backend --> db : JDBC\n(Exposed ORM, HikariCP connection pool)
+backend --> smtp : SMTP\n(membership confirmation mail)
+
+note bottom of appServer
+  Configuratie via application.conf:
+  - jwt.secret / jwt.issuer / jwt.audience / jwt.realm
+  - database connectie (JDBC url, user, password)
+  - mail.* (SMTP-instellingen EmailService)
+end note
+@enduml

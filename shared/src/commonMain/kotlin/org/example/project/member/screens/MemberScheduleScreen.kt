@@ -12,8 +12,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import org.example.project.member.navigation.MemberNavigator
+import org.example.project.model.Bike
 import org.example.project.model.Lesson
+import org.example.project.model.LocationType
 import org.example.project.viewmodel.MemberSessionViewModel
 import org.example.project.viewmodel.ScheduleViewModel
 
@@ -27,9 +30,34 @@ fun MemberScheduleScreen(
     val session = sessionVm.state
     val user = navigator.currentUser
     val scroll = rememberScrollState()
+    val scope = rememberCoroutineScope()
+
+    var bikePendingLesson by remember { mutableStateOf<Lesson?>(null) }
+    var availableBikes by remember { mutableStateOf<List<Bike>?>(null) }
+    var bikesLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.selectedDate) { scheduleVm.load() }
     LaunchedEffect(user?.userId) { user?.let { sessionVm.loadWaitlist(it.userId) } }
+
+    bikePendingLesson?.let { lesson ->
+        SpinningBikePickerDialog(
+            availableBikes = availableBikes,
+            enrolledCount = lesson.enrolledCount,
+            maxCapacity = lesson.maxCapacity,
+            isLoading = bikesLoading,
+            onConfirm = { bike ->
+                val uuidRegex = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
+                val validBikeId = if (bike.id.matches(uuidRegex)) bike.id else null
+                user?.let { sessionVm.reserve(lesson.id, it.userId, validBikeId) { scheduleVm.load() } }
+                bikePendingLesson = null
+                availableBikes = null
+            },
+            onDismiss = {
+                bikePendingLesson = null
+                availableBikes = null
+            }
+        )
+    }
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll).background(Color(0xFFF8F9FA))) {
         Box(modifier = Modifier.fillMaxWidth().background(Color(0xFF1565C0)).padding(20.dp)) {
@@ -94,7 +122,20 @@ fun MemberScheduleScreen(
                                 lesson = lesson,
                                 isEnrolled = isEnrolled,
                                 isWaitlisted = isWaitlisted,
-                                onReserve = { user?.let { sessionVm.reserve(lesson.id, it.userId) { scheduleVm.load() } } },
+                                onReserve = {
+                                    if (lesson.locationType == LocationType.SPINNING) {
+                                        scope.launch {
+                                            bikesLoading = true
+                                            bikePendingLesson = lesson
+                                            availableBikes = try {
+                                                scheduleVm.getAvailableBikes(lesson.id)
+                                            } catch (e: Exception) { null }
+                                            bikesLoading = false
+                                        }
+                                    } else {
+                                        user?.let { sessionVm.reserve(lesson.id, it.userId) { scheduleVm.load() } }
+                                    }
+                                },
                                 onCancel = { user?.let { sessionVm.cancel(lesson.id, it.userId) { scheduleVm.load() } } },
                                 onJoinWaitlist = { user?.let { sessionVm.joinWaitlist(lesson.id, it.userId) } },
                                 onLeaveWaitlist = { user?.let { sessionVm.leaveWaitlist(lesson.id, it.userId) } }
@@ -108,7 +149,7 @@ fun MemberScheduleScreen(
 }
 
 @Composable
-private fun ScheduleLessonCard(
+fun ScheduleLessonCard(
     lesson: Lesson,
     isEnrolled: Boolean,
     isWaitlisted: Boolean,

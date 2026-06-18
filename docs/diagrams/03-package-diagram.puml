@@ -1,0 +1,163 @@
+@startuml 03-package-diagram
+title SportClub - Package Diagram (Architectuur)
+skinparam packageStyle rect
+
+package "Frontend - Kotlin Multiplatform / Compose Multiplatform" {
+
+  package "androidApp" as android {
+    class MainActivity
+  }
+  package "desktopApp" as desktop {
+    class "main()" as desktopMain
+  }
+  package "webApp" as webapp {
+    class "main / SportClubWebApp" as webMain
+    package "staffScreens" as staffScreens {
+    }
+    package "webComponents" as webComponents {
+    }
+    staffScreens --> webComponents
+  }
+
+  package "shared (commonMain)" as shared {
+
+    package "org.example.project" as root {
+      class App
+      class MemberApp
+    }
+
+    package "org.example.project.model" as model {
+      class "Member, Membership, Lesson,\nLessonRosterEntry, ..." as models
+      class "UserRole, MembershipType,\nBillingCycle, MembershipStatus, ..." as enums
+    }
+
+    package "org.example.project.api" as api {
+      interface SportClubApiService
+      class RealApiService
+      class MockApiService
+      class HttpClientFactory
+      class ApiConfig
+    }
+
+    package "org.example.project.viewmodel" as viewmodel {
+      class AuthViewModel
+      class MemberSessionViewModel
+      class InstructorLessonsViewModel
+      class ScheduleViewModel
+      class "... (Workout/Lesson/Instructor/\nRegistration ViewModel)" as otherVm
+    }
+
+    package "org.example.project.member.navigation" as nav {
+      class MemberNavigator
+      class MemberRoute
+    }
+
+    package "org.example.project.member.screens" as screens {
+      class MemberLoginScreen
+      class MemberHomeScreen
+      class MemberScheduleScreen
+      class MemberMyClassesScreen
+      class MemberSubscriptionScreen
+      class MemberProfileScreen
+      class InstructorLessonsScreen
+    }
+
+    root --> screens
+    root --> nav
+    root --> viewmodel
+    screens --> viewmodel
+    screens --> nav
+    screens --> model
+    viewmodel --> api
+    viewmodel --> model
+    api --> model
+    nav --> model
+    RealApiService ..|> SportClubApiService
+    MockApiService ..|> SportClubApiService
+    RealApiService --> HttpClientFactory
+    RealApiService --> ApiConfig
+  }
+
+  android --> root : App() / MemberApp()
+  desktop --> root : App() / MemberApp()
+  webapp --> root : MemberApp()\n(via hash routing #/app)
+  webMain --> staffScreens
+  staffScreens --> viewmodel
+  staffScreens --> api
+}
+
+package "Backend - Ktor + Exposed (JVM)" {
+
+  package "org.example.project.routes" as routes {
+    class AuthRoutes
+    class UserRoutes
+    class WorkoutRoutes
+    class LessonRoutes
+    class ReservationRoutes
+    class MembershipRoutes
+  }
+
+  package "org.example.project.service" as service {
+    class AuthService
+    class UserService
+    class WorkoutService
+    class LessonService
+    class ReservationService
+    class MembershipService
+    class EmailService
+  }
+
+  package "org.example.project.repository" as repoIf {
+    interface IUserRepository
+    interface ILessonRepository
+    interface IReservationRepository
+    interface IMembershipRepository
+    interface IWaitlistRepository
+    interface INotificationRepository
+    interface "... (IWorkout/ILocation/IBike)" as otherRepoIf
+  }
+
+  package "org.example.project.repository.impl" as repoImpl {
+    class UserRepositoryImpl
+    class "... RepositoryImpl" as otherRepoImpl
+  }
+
+  package "org.example.project.domain" as domain {
+    package "models" as domainModels {
+      class "User, Membership, Lesson,\nReservation, Notification, ..." as domainClasses
+    }
+    class "UserRole, MembershipType, ...\n(enums)" as domainEnums
+  }
+
+  package "org.example.project.dto" as dto {
+    package "request" as dtoRequest {
+    }
+    package "response" as dtoResponse {
+    }
+  }
+
+  package "org.example.project.data.tables" as tables {
+    class "UsersTable, MembershipsTable,\nLessonsTable, ReservationsTable, ..." as exposedTables
+  }
+
+  package "org.example.project.plugins" as plugins {
+    class Routing
+    class Authentication
+    class HTTP
+    class Serialization
+  }
+
+  routes --> service
+  routes --> dto
+  service --> repoIf
+  service --> domain
+  repoImpl ..|> repoIf
+  repoImpl --> tables
+  repoImpl --> domain
+  plugins ..> routes : registreert
+  plugins ..> service : DI (handmatig)
+  plugins ..> repoImpl : DI (handmatig)
+}
+
+SportClubApiService ..> routes : HTTPS / JSON\n(Ktor HttpClient -> Ktor Server)\nbaseUrl + "/api/v1/**"
+@enduml

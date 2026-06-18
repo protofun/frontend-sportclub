@@ -17,6 +17,7 @@ import org.example.project.components.ErrorBanner
 import org.example.project.navigation.Navigator
 import org.example.project.navigation.Route
 import org.example.project.theme.*
+import org.example.project.model.UserRole
 import org.example.project.viewmodel.AuthViewModel
 
 @Composable
@@ -77,7 +78,7 @@ fun LoginScreen(navigator: Navigator, vm: AuthViewModel) {
                     CircularProgressIndicator()
                 } else {
                     Button(
-                        onClick = { vm.login(email, password) },
+                        onClick = { vm.login(email, password, requiredRole = UserRole.STAFF) },
                         modifier = Modifier.fillMaxWidth().height(48.dp),
                         shape = RoundedCornerShape(8.dp),
                         enabled = email.isNotBlank() && password.isNotBlank()
@@ -99,19 +100,6 @@ fun LoginScreen(navigator: Navigator, vm: AuthViewModel) {
                     }
                 }
 
-                Spacer(Modifier.height(8.dp))
-
-                // Demo credentials hint
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = SurfaceVariant),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Demo credentials:", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = OnSurfaceVariant)
-                        Text("Staff: admin@sportclub.nl / any password", fontSize = 12.sp, color = OnSurfaceVariant)
-                        Text("Instructor: instructor@sportclub.nl / any password", fontSize = 12.sp, color = OnSurfaceVariant)
-                    }
-                }
             }
         }
     }

@@ -254,12 +254,21 @@ class MockApiService : SportClubApiService {
         return lessons.filter { it.id in ids }
     }
 
-    override suspend fun reserveLesson(lessonId: String, memberId: String) {
+    private val mockTakenBikes = mutableMapOf<String, MutableSet<String>>() // lessonId -> set of bikeIds
+
+    override suspend fun getAvailableBikes(lessonId: String): List<Bike> {
+        val taken = mockTakenBikes[lessonId] ?: emptySet()
+        val allBikes = (1..4).flatMap { row -> (1..6).map { seat -> Bike("bike-$row-$seat", row, seat) } }
+        return allBikes.filter { it.id !in taken }
+    }
+
+    override suspend fun reserveLesson(lessonId: String, memberId: String, bikeId: String?) {
         val idx = lessons.indexOfFirst { it.id == lessonId }
         if (idx < 0) throw Exception("Lesson not found")
         val lesson = lessons[idx]
         if (lesson.isFull) throw Exception("Class is full — join the waitlist instead")
         memberEnrollments.getOrPut(memberId) { mutableSetOf() }.add(lessonId)
+        if (bikeId != null) mockTakenBikes.getOrPut(lessonId) { mutableSetOf() }.add(bikeId)
         lessons[idx] = lesson.copy(enrolledCount = lesson.enrolledCount + 1)
     }
 
@@ -295,5 +304,17 @@ class MockApiService : SportClubApiService {
 
     override suspend fun getMyWaitlist(memberId: String): List<String> {
         return memberWaitlists[memberId]?.toList() ?: emptyList()
+    }
+
+    override suspend fun getMyLessons(): List<Lesson> {
+        val id = currentUserId ?: return emptyList()
+        return lessons.filter { it.instructorId == id }
+    }
+
+    override suspend fun getLessonRoster(lessonId: String): List<LessonRosterEntry> {
+        val lesson = lessons.find { it.id == lessonId } ?: return emptyList()
+        return members.take(lesson.enrolledCount).map { m ->
+            LessonRosterEntry(reservationId = "r${m.id}-$lessonId", userId = m.id, name = m.fullName, email = m.email, status = "Reserved")
+        }
     }
 }

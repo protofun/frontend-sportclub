@@ -1,0 +1,52 @@
+@startuml 07-sequence-mvvm
+title MVVM-architectuur: lid upgradet abonnement (Basic -> Unlimited)
+skinparam sequenceMessageAlign center
+
+actor "Lid" as User
+boundary "MemberSubscriptionScreen\n(@Composable - View)" as View
+control "MemberSessionViewModel\n(ViewModel)" as VM
+collections "MemberSessionState\n(observable state)" as State
+participant "SportClubApiService\n(RealApiService - Model/API-laag)" as Api
+participant "Ktor Backend" as Backend
+
+== Initieel laden ==
+View -> VM : LaunchedEffect ->\nloadMemberInfo(memberId)
+activate VM
+VM -> Api : getMember(memberId)
+activate Api
+Api -> Backend : GET /api/v1/users/me\n(Authorization: Bearer <token>)
+Backend --> Api : 200 OK (UserResponse incl. membership)
+Api --> VM : Member(activeMembership = Membership(\n  type=BASIC, billingCycle=YEARLY,\n  startDate=..., endDate=..., status=ACTIVE))
+deactivate Api
+VM -> State : state = state.copy(memberInfo = member)
+deactivate VM
+State --> View : recomposition\n(observes "state by mutableStateOf")
+View -> User : toont huidig plan,\nstartdatum, einddatum,\n"Upgrade to Unlimited"-knop
+
+== Gebruiker klikt "Upgrade to Unlimited" ==
+User -> View : klik [Upgrade to Unlimited]
+View -> VM : upgrade(memberId, membership.id)
+activate VM
+VM -> Api : upgradeMembership(membershipId)
+activate Api
+Api -> Backend : PUT /api/v1/memberships/{id}/upgrade\n(Authorization: Bearer <token>)
+activate Backend
+Backend -> Backend : MembershipService.upgradeMembership(id)\n- valideer: huidig type != Unlimited\n- (toekomstig) bereken naar-rato verschil\n  bij Yearly billing
+Backend --> Api : 200 OK (MembershipResponse\n type=Unlimited, ...)
+deactivate Backend
+Api --> VM : Membership(type = UNLIMITED, ...)
+deactivate Api
+
+alt succes
+  VM -> VM : loadMemberInfo(memberId)\n(herlaadt member + membership)
+  VM -> State : state = state.copy(error = null)
+  VM -> View : onDone(true)
+else fout (bv. al Unlimited)
+  VM -> State : state = state.copy(error = e.message)
+  VM -> View : onDone(false)
+end
+deactivate VM
+
+State --> View : recomposition
+View -> User : toont bijgewerkt plan\n("Unlimited - Yearly")\nof foutmelding
+@enduml

@@ -6,6 +6,7 @@ interface SportClubApiService {
     suspend fun login(request: LoginRequest): LoginResponse
     suspend fun registerMember(request: RegistrationRequest): LoginResponse
     fun logout()
+    fun restoreSession(token: String, userId: String) {}
 
     suspend fun getWorkouts(): List<Workout>
     suspend fun createWorkout(request: WorkoutRequest): Workout
@@ -37,9 +38,14 @@ interface SportClubApiService {
 
     // Member operations
     suspend fun getMemberEnrollments(memberId: String): List<Lesson>
-    suspend fun reserveLesson(lessonId: String, memberId: String)
+    suspend fun getAvailableBikes(lessonId: String): List<Bike>
+    suspend fun reserveLesson(lessonId: String, memberId: String, bikeId: String? = null)
     suspend fun cancelReservation(lessonId: String, memberId: String)
     suspend fun joinWaitlist(lessonId: String, memberId: String)
     suspend fun leaveWaitlist(lessonId: String, memberId: String)
     suspend fun getMyWaitlist(memberId: String): List<String>
+
+    // Instructor operations
+    suspend fun getMyLessons(): List<Lesson>
+    suspend fun getLessonRoster(lessonId: String): List<LessonRosterEntry>
 }

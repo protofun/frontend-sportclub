@@ -19,7 +19,7 @@ import org.example.project.navigation.isAdminRoute
 import org.example.project.theme.*
 
 @Composable
-fun TopNavBar(navigator: Navigator) {
+fun TopNavBar(navigator: Navigator, onLogout: (() -> Unit)? = null) {
     val isAdmin = navigator.currentUser?.role?.name == "STAFF" || navigator.currentUser?.role?.name == "INSTRUCTOR"
 
     Surface(
@@ -84,7 +84,7 @@ fun TopNavBar(navigator: Navigator) {
                         fontSize = 14.sp
                     )
                     OutlinedButton(
-                        onClick = { navigator.logout() },
+                        onClick = { onLogout?.invoke() ?: navigator.logout() },
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.5f))
                     ) {

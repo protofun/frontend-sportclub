@@ -1,0 +1,82 @@
+@startuml 08-sequence-app-backend
+title Interactie App <-> Backend: inloggen (JWT) en daarna een beveiligde aanroep
+skinparam sequenceMessageAlign center
+
+actor "Instructeur" as User
+boundary "MemberLoginScreen" as LoginView
+control "AuthViewModel" as AuthVM
+participant "RealApiService\n(HttpClient)" as ApiClient
+participant "AuthRoutes\n(/api/v1/auth)" as AuthRoutes
+participant "AuthService" as AuthService
+participant "IUserRepository\n(UserRepositoryImpl)" as UserRepo
+database "PostgreSQL" as DB
+
+== 1. Inloggen en JWT verkrijgen ==
+User -> LoginView : voert email + wachtwoord in,\nklikt "Sign In"
+LoginView -> AuthVM : login(email, password)
+activate AuthVM
+AuthVM -> ApiClient : login(LoginRequest(email, password))
+activate ApiClient
+ApiClient -> AuthRoutes : POST /api/v1/auth/login\nbody: {email, password}
+activate AuthRoutes
+AuthRoutes -> AuthService : login(request)
+activate AuthService
+AuthService -> UserRepo : findByEmail(email)
+UserRepo -> DB : SELECT * FROM users WHERE email = ?
+DB --> UserRepo : User-rij (incl. passwordHash, role)
+UserRepo --> AuthService : User
+AuthService -> AuthService : BCrypt.verify(password, passwordHash)
+AuthService -> AuthService : generateToken(user)\n-> JWT.create()\n   .withClaim("userId", user.id)\n   .withClaim("role", user.role)\n   .sign(HMAC256(jwtSecret))
+AuthService --> AuthRoutes : AuthResponse(token, userId, role, email)
+deactivate AuthService
+AuthRoutes --> ApiClient : 200 OK\n{ token, userId, role: "Instructor", email }
+deactivate AuthRoutes
+ApiClient -> ApiClient : bewaar token (authToken)\nvoor volgende requests
+ApiClient --> AuthVM : LoginResponse(token, userId,\nrole=INSTRUCTOR, fullName, email)
+deactivate ApiClient
+AuthVM -> AuthVM : state = state.copy(\n  currentUser = response,\n  isAuthenticated = true)
+deactivate AuthVM
+LoginView -> LoginView : navigator.login(user)\n-> navigeer naar InstructorLessons\n(rol-gebaseerde navigatie)
+
+== 2. Beveiligde aanroep: rooster van een les opvragen ==
+User -> LoginView : (na navigatie) opent "My Lessons"\nen klikt op een les
+LoginView -> ApiClient : getLessonRoster(lessonId)
+activate ApiClient
+ApiClient -> AuthRoutes : GET /api/v1/reservations/lesson/{lessonId}\nheader: Authorization: Bearer <token>
+deactivate ApiClient
+note over AuthRoutes
+  authenticate("auth-jwt") {
+    - verifieert handtekening (HMAC256 + secret)
+    - controleert issuer/audience/expiry
+    - haalt JWTPrincipal op
+  }
+end note
+activate AuthRoutes
+AuthRoutes -> AuthRoutes : principal = call.principal<JWTPrincipal>()\nuserId = principal.getClaim("userId")\nrole   = principal.getClaim("role")
+AuthRoutes -> AuthRoutes : check: role in {Instructor, Employee}\n(anders 403 Forbidden)
+AuthRoutes -> "ReservationService" as ResService : getLessonRoster(lessonId, userId, role)
+activate ResService
+ResService -> "ILessonRepository" as LessonRepo : findById(lessonId)
+LessonRepo -> DB : SELECT * FROM lessons WHERE id = ?
+DB --> LessonRepo : Lesson
+LessonRepo --> ResService : Lesson(instructorId, ...)
+alt role == "Instructor" AND lesson.instructorId != userId
+  ResService --> AuthRoutes : throw IllegalStateException\n("You can only view the roster\nfor your own lessons")
+  AuthRoutes --> "RealApiService" : 409 Conflict\n(via StatusPages)
+else toegestaan
+  ResService -> "IReservationRepository" as ResRepo : findByLessonId(lessonId)
+  ResRepo -> DB : SELECT * FROM reservations WHERE lesson_id = ?
+  DB --> ResRepo : List<Reservation>
+  ResRepo --> ResService : reservations (excl. Cancelled)
+  loop voor elke reservation
+    ResService -> UserRepo : findById(reservation.userId)
+    UserRepo --> ResService : User(username, email)
+  end
+  ResService --> AuthRoutes : List<LessonRosterEntryResponse>
+  deactivate ResService
+  AuthRoutes --> "RealApiService" : 200 OK\n[{ reservationId, userId, name, email, status }, ...]
+end
+deactivate AuthRoutes
+"RealApiService" --> LoginView : List<LessonRosterEntry>
+LoginView -> User : toont deelnemerslijst\nvan de les
+@enduml

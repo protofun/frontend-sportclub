@@ -55,10 +55,10 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
-    fun reserve(lessonId: String, memberId: String, onRefresh: () -> Unit = {}) {
+    fun reserve(lessonId: String, memberId: String, bikeId: String? = null, onRefresh: () -> Unit = {}) {
         scope.launch {
             try {
-                api.reserveLesson(lessonId, memberId)
+                api.reserveLesson(lessonId, memberId, bikeId)
                 val ids = state.enrolledLessonIds + lessonId
                 state = state.copy(enrolledLessonIds = ids, error = null)
                 loadEnrollments(memberId)

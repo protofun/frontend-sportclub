@@ -3,6 +3,8 @@ package org.example.project.screens
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -68,22 +70,22 @@ fun SubscriptionsScreen(navigator: Navigator) {
             Spacer(Modifier.height(20.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 val perks = listOf(
-                    "✅ Access to all workout types",
-                    "✅ Certified instructors",
-                    "✅ Locker rooms & showers",
-                    "✅ Mobile app access"
+                    "Access to all workout types",
+                    "Certified instructors",
+                    "Locker rooms & showers",
+                    "Mobile app access"
                 )
                 val perks2 = listOf(
-                    "✅ Reserve classes in advance",
-                    "✅ Join waiting lists",
-                    "✅ View class history",
-                    "✅ Profile management"
+                    "Reserve classes in advance",
+                    "Join waiting lists",
+                    "View class history",
+                    "Profile management"
                 )
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    perks.forEach { Text(it, fontSize = 15.sp) }
+                    perks.forEach { PerkItem(it) }
                 }
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    perks2.forEach { Text(it, fontSize = 15.sp) }
+                    perks2.forEach { PerkItem(it) }
                 }
             }
 
@@ -209,6 +211,14 @@ private fun SubscriptionCard(
                 Text("Choose Plan", fontWeight = FontWeight.Medium)
             }
         }
+    }
+}
+
+@Composable
+private fun PerkItem(text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp), tint = Success)
+        Text(text, fontSize = 15.sp)
     }
 }
 

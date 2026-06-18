@@ -75,15 +75,6 @@ fun MemberLoginScreen(navigator: MemberNavigator, authVm: AuthViewModel) {
                     }
                 }
 
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text("Demo login:", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1565C0))
-                        Text("member@sportclub.nl / any password", fontSize = 12.sp, color = Color(0xFF37474F))
-                    }
-                }
             }
         }
     }

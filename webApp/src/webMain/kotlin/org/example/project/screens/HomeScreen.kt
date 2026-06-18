@@ -3,6 +3,8 @@ package org.example.project.screens
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -104,16 +107,16 @@ private fun FeaturesSection() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            FeatureCard("🏋️", "Expert Instructors", "Learn from certified professionals with years of experience", Modifier.weight(1f))
-            FeatureCard("📅", "Flexible Schedule", "Over 50 classes per week across all our facilities", Modifier.weight(1f))
-            FeatureCard("🎯", "All Levels Welcome", "From beginner to advanced – we have classes for everyone", Modifier.weight(1f))
-            FeatureCard("💪", "Modern Facilities", "State-of-the-art equipment and comfortable spaces", Modifier.weight(1f))
+            FeatureCard(Icons.Default.School, "Expert Instructors", "Learn from certified professionals with years of experience", Modifier.weight(1f))
+            FeatureCard(Icons.Default.CalendarMonth, "Flexible Schedule", "Over 50 classes per week across all our facilities", Modifier.weight(1f))
+            FeatureCard(Icons.Default.Groups, "All Levels Welcome", "From beginner to advanced – we have classes for everyone", Modifier.weight(1f))
+            FeatureCard(Icons.Default.Apartment, "Modern Facilities", "State-of-the-art equipment and comfortable spaces", Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun FeatureCard(icon: String, title: String, desc: String, modifier: Modifier = Modifier) {
+private fun FeatureCard(icon: ImageVector, title: String, desc: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = Surface),
@@ -124,7 +127,7 @@ private fun FeatureCard(icon: String, title: String, desc: String, modifier: Mod
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(icon, fontSize = 36.sp)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(36.dp), tint = Primary)
             Spacer(Modifier.height(12.dp))
             Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
@@ -147,15 +150,15 @@ private fun WorkoutTypesSection(navigator: Navigator) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             val workoutTypes = listOf(
-                Triple("🧘", "Yoga", Primary),
-                Triple("🥊", "Boxing", Error),
-                Triple("🚴", "Spinning", Secondary),
-                Triple("🏃", "Bootcamp", Success),
-                Triple("💪", "Body Shape", Color(0xFF9C27B0)),
-                Triple("⚡", "Club Power", Warning)
+                Triple(Icons.Default.SelfImprovement, "Yoga", Primary),
+                Triple(Icons.Default.SportsMartialArts, "Boxing", Error),
+                Triple(Icons.Default.PedalBike, "Spinning", Secondary),
+                Triple(Icons.Default.DirectionsRun, "Bootcamp", Success),
+                Triple(Icons.Default.FitnessCenter, "Body Shape", Color(0xFF9C27B0)),
+                Triple(Icons.Default.Bolt, "Club Power", Warning)
             )
-            workoutTypes.forEach { (emoji, name, color) ->
-                WorkoutTypeChip(emoji, name, color, Modifier.weight(1f))
+            workoutTypes.forEach { (icon, name, color) ->
+                WorkoutTypeChip(icon, name, color, Modifier.weight(1f))
             }
         }
         Spacer(Modifier.height(24.dp))
@@ -166,7 +169,7 @@ private fun WorkoutTypesSection(navigator: Navigator) {
 }
 
 @Composable
-private fun WorkoutTypeChip(emoji: String, name: String, color: Color, modifier: Modifier = Modifier) {
+private fun WorkoutTypeChip(icon: ImageVector, name: String, color: Color, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.08f)),
@@ -177,7 +180,7 @@ private fun WorkoutTypeChip(emoji: String, name: String, color: Color, modifier:
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(emoji, fontSize = 28.sp)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(28.dp), tint = color)
             Spacer(Modifier.height(6.dp))
             Text(name, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = color)
         }
@@ -333,9 +336,9 @@ private fun AppDownloadSection(navigator: Navigator) {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AppPlatformBadge("🌐", "Web browser", Modifier.weight(1f))
-            AppPlatformBadge("🤖", "Android APK", Modifier.weight(1f))
-            AppPlatformBadge("🪟", "Windows .msi", Modifier.weight(1f))
+            AppPlatformBadge(Icons.Default.Language, "Web browser", Modifier.weight(1f))
+            AppPlatformBadge(Icons.Default.Android, "Android APK", Modifier.weight(1f))
+            AppPlatformBadge(Icons.Default.Computer, "Windows .msi", Modifier.weight(1f))
         }
         Spacer(Modifier.height(24.dp))
         Button(
@@ -350,7 +353,7 @@ private fun AppDownloadSection(navigator: Navigator) {
 }
 
 @Composable
-private fun AppPlatformBadge(icon: String, label: String, modifier: Modifier = Modifier) {
+private fun AppPlatformBadge(icon: ImageVector, label: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
@@ -361,7 +364,7 @@ private fun AppPlatformBadge(icon: String, label: String, modifier: Modifier = M
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(icon, fontSize = 28.sp)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(28.dp), tint = Primary)
             Spacer(Modifier.height(6.dp))
             Text(label, fontSize = 13.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center)
         }

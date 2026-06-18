@@ -13,6 +13,7 @@ import org.example.project.api.SportClubApiService
 import org.example.project.member.navigation.MemberNavigator
 import org.example.project.member.navigation.MemberRoute
 import org.example.project.member.screens.*
+import org.example.project.model.UserRole
 import org.example.project.viewmodel.*
 
 @Composable
@@ -22,6 +23,7 @@ fun MemberApp() {
     val authVm = remember { AuthViewModel(api) }
     val scheduleVm = remember { ScheduleViewModel(api) }
     val sessionVm = remember { MemberSessionViewModel(api) }
+    val instructorLessonsVm = remember { InstructorLessonsViewModel(api) }
 
     MaterialTheme(
         colorScheme = lightColorScheme(
@@ -34,16 +36,24 @@ fun MemberApp() {
         if (!navigator.isAuthenticated) {
             MemberLoginScreen(navigator, authVm)
         } else {
+            val isInstructor = navigator.currentUser?.role == UserRole.INSTRUCTOR
             Scaffold(
                 bottomBar = {
                     NavigationBar(containerColor = Color.White, tonalElevation = 0.dp) {
-                        val items = listOf(
-                            Triple(MemberRoute.Home, "Home", "🏠"),
-                            Triple(MemberRoute.Schedule, "Schedule", "📅"),
-                            Triple(MemberRoute.MyClasses, "My Classes", "🏋️"),
-                            Triple(MemberRoute.Subscription, "Membership", "💳"),
-                            Triple(MemberRoute.Profile, "Profile", "👤")
-                        )
+                        val items = if (isInstructor) {
+                            listOf(
+                                Triple(MemberRoute.InstructorLessons, "My Lessons", "📋"),
+                                Triple(MemberRoute.Profile, "Profile", "👤")
+                            )
+                        } else {
+                            listOf(
+                                Triple(MemberRoute.Home, "Home", "🏠"),
+                                Triple(MemberRoute.Schedule, "Schedule", "📅"),
+                                Triple(MemberRoute.MyClasses, "My Classes", "🏋️"),
+                                Triple(MemberRoute.Subscription, "Membership", "💳"),
+                                Triple(MemberRoute.Profile, "Profile", "👤")
+                            )
+                        }
                         items.forEach { (route, label, icon) ->
                             NavigationBarItem(
                                 selected = navigator.currentRoute == route,
@@ -72,6 +82,7 @@ fun MemberApp() {
                         is MemberRoute.MyClasses -> MemberMyClassesScreen(navigator, sessionVm)
                         is MemberRoute.Subscription -> MemberSubscriptionScreen(navigator, sessionVm)
                         is MemberRoute.Profile -> MemberProfileScreen(navigator, sessionVm, authVm)
+                        is MemberRoute.InstructorLessons -> InstructorLessonsScreen(navigator, instructorLessonsVm)
                     }
                 }
             }

@@ -3,6 +3,8 @@ package org.example.project.screens
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -102,7 +104,7 @@ fun ScheduleScreen(navigator: Navigator, vm: ScheduleViewModel) {
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("📅", fontSize = 48.sp)
+                            Icon(Icons.Default.CalendarMonth, contentDescription = null, modifier = Modifier.size(48.dp), tint = OnSurfaceVariant)
                             Spacer(Modifier.height(8.dp))
                             Text("No classes scheduled", fontWeight = FontWeight.Medium, fontSize = 16.sp)
                             Text("Try a different date or filter", color = OnSurfaceVariant, fontSize = 14.sp)

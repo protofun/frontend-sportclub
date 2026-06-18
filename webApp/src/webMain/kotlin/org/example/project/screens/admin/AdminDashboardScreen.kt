@@ -3,12 +3,15 @@ package org.example.project.screens.admin
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,11 +67,11 @@ fun AdminDashboardScreen(navigator: Navigator, api: SportClubApiService, schedul
             Text("Quick Actions", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 val actions = listOf(
-                    Triple("📋", "Manage Workouts", Route.AdminWorkouts),
-                    Triple("👤", "Manage Instructors", Route.AdminInstructors),
-                    Triple("📅", "Schedule Classes", Route.AdminSchedule),
-                    Triple("👥", "View Members", Route.AdminMembers),
-                    Triple("📊", "Class Occupancy", Route.AdminOccupancy)
+                    Triple(Icons.Default.FitnessCenter, "Manage Workouts", Route.AdminWorkouts),
+                    Triple(Icons.Default.Person, "Manage Instructors", Route.AdminInstructors),
+                    Triple(Icons.Default.CalendarMonth, "Schedule Classes", Route.AdminSchedule),
+                    Triple(Icons.Default.Group, "View Members", Route.AdminMembers),
+                    Triple(Icons.Default.BarChart, "Class Occupancy", Route.AdminOccupancy)
                 )
                 actions.forEach { (icon, label, route) ->
                     QuickActionCard(icon, label, { navigator.navigate(route) }, Modifier.weight(1f))
@@ -102,7 +105,7 @@ fun AdminDashboardScreen(navigator: Navigator, api: SportClubApiService, schedul
 }
 
 @Composable
-private fun QuickActionCard(icon: String, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun QuickActionCard(icon: ImageVector, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
@@ -113,7 +116,7 @@ private fun QuickActionCard(icon: String, label: String, onClick: () -> Unit, mo
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(icon, fontSize = 28.sp)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(28.dp), tint = Primary)
             Spacer(Modifier.height(8.dp))
             Text(label, fontSize = 13.sp, fontWeight = FontWeight.Medium, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         }

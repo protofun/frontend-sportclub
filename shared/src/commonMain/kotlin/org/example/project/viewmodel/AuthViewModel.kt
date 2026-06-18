@@ -18,12 +18,12 @@ class AuthViewModel(private val api: SportClubApiService) {
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String, requiredRole: UserRole? = null) {
         scope.launch {
             state = state.copy(isLoading = true, error = null)
             try {
                 val response = api.login(LoginRequest(email, password))
-                if (response.role != UserRole.STAFF) {
+                if (requiredRole != null && response.role != requiredRole) {
                     api.logout()
                     state = AuthState(error = "Only staff members can log in to this website.")
                 } else {
@@ -33,6 +33,10 @@ class AuthViewModel(private val api: SportClubApiService) {
                 state = state.copy(isLoading = false, error = e.message ?: "Login failed")
             }
         }
+    }
+
+    fun restoreSession(user: LoginResponse) {
+        state = AuthState(currentUser = user, isAuthenticated = true)
     }
 
     fun logout() {
