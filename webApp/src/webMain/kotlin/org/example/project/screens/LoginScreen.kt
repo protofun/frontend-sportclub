@@ -20,34 +20,30 @@ import org.example.project.theme.*
 import org.example.project.model.UserRole
 import org.example.project.viewmodel.AuthViewModel
 
+// Login screen for STAFF members only.
+// Flow: user fills email + password → clicks Sign In → vm.login() calls POST /api/v1/auth/login
+//       → if role == STAFF, navigator.login(user) is called → redirects to AdminDashboard
+//       → if role != STAFF or wrong credentials, an error banner is shown
 @Composable
 fun LoginScreen(navigator: Navigator, vm: AuthViewModel) {
     val state = vm.state
-    var email by remember { mutableStateOf("") }
+
+    // Local UI state for the text fields. remember keeps the values across recompositions.
+    var email    by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    // Watch state.isAuthenticated when it flips to true after a login, navigate to admin.
     LaunchedEffect(state.isAuthenticated) {
         val user = state.currentUser
-        if (state.isAuthenticated && user != null) {
-            navigator.login(user)
-        }
+        if (state.isAuthenticated && user != null) navigator.login(user)
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize().background(Background),
-        contentAlignment = Alignment.Center
-    ) {
-        Card(
-            modifier = Modifier.width(440.dp),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(8.dp)
-        ) {
+    Box(modifier = Modifier.fillMaxSize().background(Background), contentAlignment = Alignment.Center) {
+        Card(modifier = Modifier.width(440.dp), shape = RoundedCornerShape(16.dp), elevation = CardDefaults.cardElevation(8.dp)) {
             Column(modifier = Modifier.padding(40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                // Logo
-                Box(
-                    modifier = Modifier.size(64.dp).clip(RoundedCornerShape(16.dp)).background(Primary),
-                    contentAlignment = Alignment.Center
-                ) {
+
+                // Logo icon
+                Box(modifier = Modifier.size(64.dp).clip(RoundedCornerShape(16.dp)).background(Primary), contentAlignment = Alignment.Center) {
                     Text("SC", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
                 }
                 Spacer(Modifier.height(16.dp))
@@ -55,36 +51,26 @@ fun LoginScreen(navigator: Navigator, vm: AuthViewModel) {
                 Text("Sign in to your SportClub account", fontSize = 14.sp, color = OnSurfaceVariant)
                 Spacer(Modifier.height(32.dp))
 
-                state.error?.let {
-                    ErrorBanner(it) { vm.clearError() }
-                    Spacer(Modifier.height(12.dp))
-                }
+                // Error banner — only rendered when state.error is not null.
+                state.error?.let { ErrorBanner(it) { vm.clearError() }; Spacer(Modifier.height(12.dp)) }
 
-                OutlinedTextField(
-                    email, { email = it },
-                    label = { Text("Email Address") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                OutlinedTextField(email, { email = it }, label = { Text("Email Address") }, modifier = Modifier.fillMaxWidth())
                 Spacer(Modifier.height(12.dp))
-                OutlinedTextField(
-                    password, { password = it },
-                    label = { Text("Password") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                // password hider, changes chars in dots
+                OutlinedTextField(password, { password = it }, label = { Text("Password") }, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
                 Spacer(Modifier.height(24.dp))
 
                 if (state.isLoading) {
                     CircularProgressIndicator()
                 } else {
                     Button(
+                        // required admin role otherwise you get rejected
                         onClick = { vm.login(email, password, requiredRole = UserRole.STAFF) },
                         modifier = Modifier.fillMaxWidth().height(48.dp),
                         shape = RoundedCornerShape(8.dp),
+                        // Disable button if fields are blank
                         enabled = email.isNotBlank() && password.isNotBlank()
-                    ) {
-                        Text("Sign In", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                    }
+                    ) { Text("Sign In", fontSize = 16.sp, fontWeight = FontWeight.Medium) }
                 }
 
                 Spacer(Modifier.height(16.dp))
@@ -92,14 +78,9 @@ fun LoginScreen(navigator: Navigator, vm: AuthViewModel) {
                 Spacer(Modifier.height(16.dp))
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TextButton(onClick = { navigator.navigate(Route.Home) }) {
-                        Text("← Back to Home", fontSize = 13.sp)
-                    }
-                    TextButton(onClick = { navigator.navigate(Route.Register) }) {
-                        Text("Create Account", fontSize = 13.sp)
-                    }
+                    TextButton(onClick = { navigator.navigate(Route.Home) }) { Text("← Back to Home", fontSize = 13.sp) }
+                    TextButton(onClick = { navigator.navigate(Route.Register) }) { Text("Create Account", fontSize = 13.sp) }
                 }
-
             }
         }
     }

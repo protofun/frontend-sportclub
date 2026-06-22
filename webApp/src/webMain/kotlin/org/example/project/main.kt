@@ -12,14 +12,16 @@ import androidx.compose.ui.window.ComposeViewport
 import kotlinx.browser.window
 import org.w3c.dom.events.Event
 
-/** Browser entry point. Routes between the staff portal ([SportClubWebApp]) and the
- *  member/instructor app ([App]) based on the URL hash, so the same app that runs on
- *  Android and Desktop is also reachable in the browser at "#/app". */
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport {
-        var showMemberApp by remember { mutableStateOf(window.location.hash.startsWith("#/app")) }
+        // The URL hash (#/app) determines which mode to show:
+        //   #/app   → App (the member/instructor app, shared with Android)
+        var showMemberApp by remember {
+            mutableStateOf(window.location.hash.startsWith("#/app"))
+        }
 
+        // Listen for hash changes while the page is open.
         DisposableEffect(Unit) {
             val listener: (Event) -> Unit = {
                 showMemberApp = window.location.hash.startsWith("#/app")
@@ -29,21 +31,25 @@ fun main() {
         }
 
         if (showMemberApp) {
+            // Member app mode: show a back button + the shared App() composable
             Column(modifier = Modifier.fillMaxSize()) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(8.dp),
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // By clicking go back to the website
                     TextButton(onClick = { window.location.hash = "" }) {
                         Text("← Back to SportClub website", fontSize = 13.sp)
                     }
                 }
                 Box(modifier = Modifier.weight(1f)) {
+                    // Composable app
                     App()
                 }
             }
         } else {
+            // Public website for everyone
             SportClubWebApp()
         }
     }

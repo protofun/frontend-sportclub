@@ -5,6 +5,7 @@ import kotlinx.coroutines.*
 import org.example.project.api.SportClubApiService
 import org.example.project.model.*
 
+// State for the admin Members screen.
 data class MemberState(
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -12,6 +13,7 @@ data class MemberState(
     val searchQuery: String = "",
     val selectedMember: Member? = null
 ) {
+    // Computed property
     val filteredMembers: List<Member>
         get() = if (searchQuery.isBlank()) members
         else members.filter { m ->
@@ -20,6 +22,8 @@ data class MemberState(
         }
 }
 
+// Read-only ViewModel for the admin Members screen.
+// Lists all members from GET /users
 class MemberViewModel(private val api: SportClubApiService) {
     var state by mutableStateOf(MemberState())
         private set
@@ -37,6 +41,7 @@ class MemberViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Updates the search query
     fun setSearch(query: String) { state = state.copy(searchQuery = query) }
     fun selectMember(m: Member?) { state = state.copy(selectedMember = m) }
     fun clearError() { state = state.copy(error = null) }

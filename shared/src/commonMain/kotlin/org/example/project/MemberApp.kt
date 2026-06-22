@@ -16,8 +16,11 @@ import org.example.project.member.screens.*
 import org.example.project.model.UserRole
 import org.example.project.viewmodel.*
 
+// MemberApp is the root UI of the mobile app (for members and instructors).
+// This is the equivalent of the WebApp in the website version.
 @Composable
 fun MemberApp() {
+    // (i.e. they are not recreated every time the UI redraws).
     val api: SportClubApiService = remember { RealApiService() }
     val navigator = remember { MemberNavigator() }
     val authVm = remember { AuthViewModel(api) }
@@ -25,6 +28,7 @@ fun MemberApp() {
     val sessionVm = remember { MemberSessionViewModel(api) }
     val instructorLessonsVm = remember { InstructorLessonsViewModel(api) }
 
+    // Set defaukt colors
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = Color(0xFF1565C0),
@@ -33,12 +37,16 @@ fun MemberApp() {
             surface = Color.White
         )
     ) {
+        // While the user is not logged in, show the login screen.
         if (!navigator.isAuthenticated) {
             MemberLoginScreen(navigator, authVm)
         } else {
             val isInstructor = navigator.currentUser?.role == UserRole.INSTRUCTOR
+
+            // Scaffold provides a standard layout with a bottom navigation bar.
             Scaffold(
                 bottomBar = {
+                    // NavigationBar is the bar at the bottom of the screen with icons for each section.
                     NavigationBar(containerColor = Color.White, tonalElevation = 0.dp) {
                         val items = if (isInstructor) {
                             listOf(
@@ -75,6 +83,7 @@ fun MemberApp() {
                     }
                 }
             ) { padding ->
+                // Render correct scren
                 Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                     when (navigator.currentRoute) {
                         is MemberRoute.Home -> MemberHomeScreen(navigator, sessionVm)

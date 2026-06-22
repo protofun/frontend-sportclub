@@ -18,6 +18,10 @@ import org.example.project.model.Instructor
 import org.example.project.theme.*
 import org.example.project.viewmodel.InstructorViewModel
 
+// Admin screen for managing instructors.
+// Same Add/Edit/Delete pattern as WorkoutsScreen but backed by InstructorViewModel.
+// Instructors are stored as users with role "Instructor" in the backend.
+// GET: /users filtered by role | POST/PUT: /users/instructors | DELETE: /users/{id}
 @Composable
 fun InstructorsScreen(vm: InstructorViewModel) {
     LaunchedEffect(Unit) { vm.load() }

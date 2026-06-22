@@ -20,6 +20,11 @@ import org.example.project.model.LessonOccupancy
 import org.example.project.theme.*
 import org.example.project.util.todayDateString
 
+// Admin occupancy report — shows enrollment counts per lesson for a date range.
+// Unlike other admin screens this one doesn't have a ViewModel; it uses local state + a coroutine
+// scope directly because the screen has no dialog state and is purely a read-only report.
+// Data: api.getLessonOccupancy(start, end) which internally calls GET /lessons?from=...&to=...
+//       and maps each Lesson's enrolledCount / maxCapacity into a LessonOccupancy object.
 @Composable
 fun OccupancyScreen(api: SportClubApiService) {
     var startDate by remember { mutableStateOf(todayDateString()) }

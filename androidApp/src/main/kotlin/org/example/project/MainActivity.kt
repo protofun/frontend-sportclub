@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 
+// MainActivity is the entry point of the Android app.
+// Every Android app has exactly one Activity as its starting screen.
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -18,6 +20,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// @Preview lets Android Studio render a preview without launching the app.
 @Preview
 @Composable
 fun AppAndroidPreview() {

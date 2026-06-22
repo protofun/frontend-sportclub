@@ -2,41 +2,51 @@ package org.example.project.api
 
 import org.example.project.model.*
 
+// Contract for all backend communication. Every function maps to one HTTP endpoint.
 interface SportClubApiService {
-    suspend fun login(request: LoginRequest): LoginResponse
-    suspend fun registerMember(request: RegistrationRequest): LoginResponse
-    fun logout()
-    fun restoreSession(token: String, userId: String) {}
 
-    suspend fun getWorkouts(): List<Workout>
-    suspend fun createWorkout(request: WorkoutRequest): Workout
-    suspend fun updateWorkout(id: String, request: WorkoutRequest): Workout
-    suspend fun deleteWorkout(id: String)
+    // Auth
+    suspend fun login(request: LoginRequest): LoginResponse            // POST /auth/login
+    suspend fun registerMember(request: RegistrationRequest): LoginResponse // POST /auth/register
+    fun logout()                                                        // clears the auth token (local only)
+    fun restoreSession(token: String, userId: String) {}               // re-injects a saved token
 
-    suspend fun getInstructors(): List<Instructor>
-    suspend fun createInstructor(request: InstructorRequest): Instructor
+    // Workouts
+    suspend fun getWorkouts(): List<Workout>                            // GET    /workouts
+    suspend fun createWorkout(request: WorkoutRequest): Workout         // POST   /workouts
+    suspend fun updateWorkout(id: String, request: WorkoutRequest): Workout // PUT /workouts/{id}
+    suspend fun deleteWorkout(id: String)                               // DELETE /workouts/{id}
+
+    // Instructors
+    suspend fun getInstructors(): List<Instructor>                      // GET    /users  (filtered by role)
+    suspend fun createInstructor(request: InstructorRequest): Instructor // POST  /users/instructors
     suspend fun updateInstructor(id: String, request: InstructorRequest): Instructor
     suspend fun deleteInstructor(id: String)
 
+    // Locations
     suspend fun getLocations(): List<Location>
 
-    suspend fun getLessons(startDate: String, endDate: String): List<Lesson>
-    suspend fun createLesson(request: LessonRequest): List<Lesson>
+    // Lessons
+    suspend fun getLessons(startDate: String, endDate: String): List<Lesson> // GET /lessons?from=...&to=...
+    suspend fun createLesson(request: LessonRequest): List<Lesson>     // POST /lessons (or /lessons/recurring)
     suspend fun updateLesson(id: String, request: LessonRequest): Lesson
     suspend fun deleteLesson(id: String)
 
-    suspend fun getMembers(): List<Member>
+    // Members
+    suspend fun getMembers(): List<Member>                              // GET /users  (filtered by role)
     suspend fun getMember(id: String): Member
-    suspend fun updateProfile(username: String?, profileImageUrl: String?): Member
+    suspend fun updateProfile(username: String?, profileImageUrl: String?): Member // PUT /users/me
 
-    suspend fun getMembershipPrices(): List<MembershipPrice>
+    // Memberships
+    suspend fun getMembershipPrices(): List<MembershipPrice>            // GET /memberships/prices
     suspend fun subscribeMembership(type: MembershipType, billingCycle: BillingCycle, startDate: String): Membership
     suspend fun upgradeMembership(membershipId: String): Membership
 
+    // Admin stats
     suspend fun getLessonOccupancy(startDate: String, endDate: String): List<LessonOccupancy>
     suspend fun getDashboardStats(): DashboardStats
 
-    // Member operations
+    // Member reservations
     suspend fun getMemberEnrollments(memberId: String): List<Lesson>
     suspend fun getAvailableBikes(lessonId: String): List<Bike>
     suspend fun reserveLesson(lessonId: String, memberId: String, bikeId: String? = null)

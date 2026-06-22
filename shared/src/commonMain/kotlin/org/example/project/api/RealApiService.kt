@@ -215,7 +215,6 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
     }
 
     // ---- auth ---------------------------------------------------------------------------------
-
     override suspend fun login(request: LoginRequest): LoginResponse {
         val dto: AuthResponseDto = apiPost("/auth/login", LoginRequestDto(request.email, request.password))
         authToken = dto.token

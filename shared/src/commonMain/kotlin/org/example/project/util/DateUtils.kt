@@ -34,6 +34,39 @@ private fun daysFromCivil(y: Int, m: Int, d: Int): Long {
     return era * 146097L + doe - 719468L
 }
 
+/** Converts an ISO date or datetime string to a readable format, e.g. "2026-06-21T10:00:00" → "June 21, 2026" */
+fun formatDateFriendly(dateOrDateTime: String): String {
+    val datePart = dateOrDateTime.substringBefore("T")
+    val parts = datePart.split("-")
+    val months = listOf("", "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December")
+    return "${months[parts[1].toInt()]} ${parts[2].toInt()}, ${parts[0]}"
+}
+
+/**
+ * Returns true when the lesson's startTime has already passed (best-effort UTC comparison).
+ * startTime must be "YYYY-MM-DDThh:mm:ss" or similar ISO format.
+ */
+fun isLessonInPast(startTime: String): Boolean {
+    return try {
+        val tIdx = startTime.indexOf("T")
+        val datePart = startTime.substring(0, tIdx)
+        val timePart = startTime.substring(tIdx + 1)
+        val today = todayDateString()
+        when {
+            datePart < today -> true
+            datePart > today -> false
+            else -> {
+                val h = timePart.substring(0, 2).toInt()
+                val m = timePart.substring(3, 5).toInt()
+                val lessonMinutesUtc = h * 60 + m
+                val currentMinutesUtc = ((currentEpochMillis() / 60_000L) % (24 * 60)).toInt()
+                currentMinutesUtc >= lessonMinutesUtc
+            }
+        }
+    } catch (e: Exception) { false }
+}
+
 /** Adds [days] calendar days to an ISO-8601 date or date-time string, preserving any time component. */
 fun addDaysToIsoDateTime(dateTime: String, days: Int): String {
     val tIndex = dateTime.indexOf("T")

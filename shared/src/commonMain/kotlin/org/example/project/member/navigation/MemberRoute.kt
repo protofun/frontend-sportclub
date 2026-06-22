@@ -1,5 +1,6 @@
 package org.example.project.member.navigation
 
+// MemberRoute defines all screens that can be navigated to in the app.
 sealed class MemberRoute {
     object Home : MemberRoute()
     object Schedule : MemberRoute()

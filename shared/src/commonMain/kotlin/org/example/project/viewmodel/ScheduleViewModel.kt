@@ -6,14 +6,16 @@ import org.example.project.api.SportClubApiService
 import org.example.project.model.*
 import org.example.project.util.todayDateString
 
+// State for ScheduleScreen and the "Today's Classes" section on HomeScreen.
 data class ScheduleState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val lessons: List<Lesson> = emptyList(),
     val workouts: List<Workout> = emptyList(),
     val selectedDate: String = todayDateString(),
-    val filterWorkoutId: String? = null
+    val filterWorkoutId: String? = null           // null = show all workout types
 ) {
+    // applies the active filter without an extra API call.
     val filteredLessons: List<Lesson>
         get() = if (filterWorkoutId == null) lessons else lessons.filter { it.workoutId == filterWorkoutId }
 }
@@ -24,12 +26,15 @@ class ScheduleViewModel(private val api: SportClubApiService) {
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
+    // Fetches lessons and workout types for the given date.
+    // Called by ScheduleScreen on open
     fun load(date: String = state.selectedDate) {
         scope.launch {
             state = state.copy(isLoading = true, error = null, selectedDate = date)
             try {
-                val lessons = api.getLessons(date, date)
-                val workouts = api.getWorkouts()
+                // Both calls run sequentially
+                val lessons  = api.getLessons(date, date)  // GET /lessons?from=...&to=...
+                val workouts = api.getWorkouts()            // GET /workouts
                 state = state.copy(isLoading = false, lessons = lessons, workouts = workouts)
             } catch (e: Exception) {
                 state = state.copy(isLoading = false, error = e.message)
@@ -37,6 +42,8 @@ class ScheduleViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Moves to the previous calendar day and reloads
+    // because Kotlin/Wasm doesn't have java.time available in the browser.
     fun previousDay() {
         val parts = state.selectedDate.split("-")
         val day = parts[2].toInt() - 1
@@ -53,6 +60,7 @@ class ScheduleViewModel(private val api: SportClubApiService) {
         load(newDate)
     }
 
+    // Moves to the next calendar day and reloads.
     fun nextDay() {
         val parts = state.selectedDate.split("-")
         val daysInMonth = listOf(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
@@ -62,15 +70,15 @@ class ScheduleViewModel(private val api: SportClubApiService) {
             "${parts[0]}-${parts[1]}-${day.toString().padStart(2, '0')}"
         } else {
             val newMonth = if (month == 12) 1 else month + 1
-            val newYear = if (month == 12) parts[0].toInt() + 1 else parts[0].toInt()
+            val newYear  = if (month == 12) parts[0].toInt() + 1 else parts[0].toInt()
             "$newYear-${newMonth.toString().padStart(2, '0')}-01"
         }
         load(newDate)
     }
 
-    fun setFilter(workoutId: String?) {
-        state = state.copy(filterWorkoutId = workoutId)
-    }
+    // Sets the active workout filter
+    fun setFilter(workoutId: String?) { state = state.copy(filterWorkoutId = workoutId) }
 
+    // Gets the available bikes
     suspend fun getAvailableBikes(lessonId: String) = api.getAvailableBikes(lessonId)
 }

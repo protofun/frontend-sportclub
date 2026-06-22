@@ -5,6 +5,7 @@ import kotlinx.coroutines.*
 import org.example.project.api.SportClubApiService
 import org.example.project.model.*
 
+// State for the admin Instructors screen
 data class InstructorState(
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -14,12 +15,15 @@ data class InstructorState(
     val showDeleteConfirm: String? = null
 )
 
+// CRUD for instructors
+// GET comes from GET /users filtered by role; POST goes to POST /users/instructors
 class InstructorViewModel(private val api: SportClubApiService) {
     var state by mutableStateOf(InstructorState())
         private set
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
+    // Loads instructors from GET /users
     fun load() {
         scope.launch {
             state = state.copy(isLoading = true, error = null)
@@ -37,11 +41,12 @@ class InstructorViewModel(private val api: SportClubApiService) {
     fun showDeleteConfirm(id: String) { state = state.copy(showDeleteConfirm = id) }
     fun dismissDeleteConfirm() { state = state.copy(showDeleteConfirm = null) }
 
+    // PUT /users/instructors/{id} if editing, POST /users/instructors if new.
     fun save(firstName: String, lastName: String, email: String, specialties: List<String>) {
         scope.launch {
             state = state.copy(isLoading = true)
             try {
-                val req = InstructorRequest(firstName, lastName, email, null, specialties)
+                val req     = InstructorRequest(firstName, lastName, email, null, specialties)
                 val editing = state.editingInstructor
                 if (editing != null) api.updateInstructor(editing.id, req) else api.createInstructor(req)
                 state = state.copy(isLoading = false, showDialog = false, editingInstructor = null)
@@ -52,15 +57,12 @@ class InstructorViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // DELETE /users/{id}
     fun delete(id: String) {
         scope.launch {
             state = state.copy(isLoading = true, showDeleteConfirm = null)
-            try {
-                api.deleteInstructor(id)
-                load()
-            } catch (e: Exception) {
-                state = state.copy(isLoading = false, error = e.message)
-            }
+            try { api.deleteInstructor(id); load() }
+            catch (e: Exception) { state = state.copy(isLoading = false, error = e.message) }
         }
     }
 

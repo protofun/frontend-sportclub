@@ -18,16 +18,20 @@ import org.example.project.model.LessonRosterEntry
 import org.example.project.util.todayDateString
 import org.example.project.viewmodel.InstructorLessonsViewModel
 
+// InstructorLessonsScreen is the main screen for instructors
+// Shows all lessons assigned to the instructor, split into "Upcoming" and "Past"
 @Composable
 fun InstructorLessonsScreen(navigator: MemberNavigator, vm: InstructorLessonsViewModel) {
     val state = vm.state
     val scroll = rememberScrollState()
 
+    // Load all lessons for this instructor when the screen opens
     LaunchedEffect(navigator.currentUser?.userId) {
         vm.loadMyLessons()
     }
 
     val today = todayDateString()
+    // Split into upcoming and past lessons based on start date
     val upcoming = state.lessons.filter { it.startTime >= today }
     val past = state.lessons.filter { it.startTime < today }
 
@@ -94,12 +98,15 @@ fun InstructorLessonsScreen(navigator: MemberNavigator, vm: InstructorLessonsVie
     }
 }
 
+// InstructorLessonCard shows one lesson as a collapsible card
+// Tapping it expands the card and loads the participant list
 @Composable
 private fun InstructorLessonCard(
     lesson: Lesson,
     state: org.example.project.viewmodel.InstructorLessonsState,
     vm: InstructorLessonsViewModel
 ) {
+    // expanded is true when this lesson is the currently selected one
     val expanded = state.selectedLessonId == lesson.id
     Card(
         shape = RoundedCornerShape(10.dp),
@@ -160,6 +167,7 @@ private fun InstructorLessonCard(
     }
 }
 
+// RosterEntryRow shows one member from the participant list: avatar initial, name, email and status
 @Composable
 private fun RosterEntryRow(entry: LessonRosterEntry) {
     Row(

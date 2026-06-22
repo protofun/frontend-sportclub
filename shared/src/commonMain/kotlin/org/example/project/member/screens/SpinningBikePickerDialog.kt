@@ -16,11 +16,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.model.Bike
 
+// All 24 bikes as a static list (4 rows × 6 seats).
 private val ALL_BIKES = (1..4).flatMap { row -> (1..6).map { seat -> Bike("bike-$row-$seat", row, seat) } }
 
+// SpinningBikePickerDialog lets a member pick a specific bike in the spinning room
 @Composable
 fun SpinningBikePickerDialog(
-    availableBikes: List<Bike>?,   // null = laden mislukt, lege lijst = alles bezet
+    availableBikes: List<Bike>?,
     enrolledCount: Int,
     maxCapacity: Int,
     isLoading: Boolean,
@@ -30,14 +32,15 @@ fun SpinningBikePickerDialog(
     var selectedBike by remember { mutableStateOf<Bike?>(null) }
 
     val totalBikes = 24
+    // Number of bikes that already have a reservation
     val bikesWithReservation = if (availableBikes != null) totalBikes - availableBikes.size else 0
     // People enrolled without a specific bike (old reservations or API failure)
     val enrolledWithoutBike = enrolledCount - bikesWithReservation
     val loadFailed = availableBikes == null && !isLoading
 
     // Which bikes to show as clickable:
-    // - If API worked: only bikes in availableBikes list
-    // - If API failed: all 24 (we can't know which are taken)
+    // - if api works only bikes in availableBikes list
+    // - if api fails all 24
     val selectableBikes: List<Bike> = availableBikes ?: ALL_BIKES
 
     AlertDialog(
@@ -50,7 +53,7 @@ fun SpinningBikePickerDialog(
                     fontSize = 13.sp,
                     color = Color(0xFF757575)
                 )
-                if (!isLoading && bikesWithReservation < enrolledCount && enrolledCount > 0) {
+                if (!isLoading && !loadFailed && bikesWithReservation < enrolledCount && enrolledCount > 0) {
                     Text(
                         "$enrolledWithoutBike enrolled member(s) have no assigned bike yet",
                         fontSize = 11.sp,
@@ -74,7 +77,7 @@ fun SpinningBikePickerDialog(
                         )
                     }
 
-                    // Legend
+                    // Colour legend for the floor plan.
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         LegendDot(Color(0xFF1565C0).copy(alpha = 0.25f), "Available")
                         LegendDot(Color(0xFF4CAF50), "Selected")
@@ -170,6 +173,7 @@ fun SpinningBikePickerDialog(
     )
 }
 
+// LegendDot draws a small coloured square with a label for the floor plan legend
 @Composable
 private fun LegendDot(color: Color, label: String) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {

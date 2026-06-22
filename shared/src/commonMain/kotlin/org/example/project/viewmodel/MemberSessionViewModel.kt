@@ -5,6 +5,8 @@ import kotlinx.coroutines.*
 import org.example.project.api.SportClubApiService
 import org.example.project.model.*
 
+// MemberSessionState holds all UI state related to the member's session
+// enrollments, waitlist, profile data and loading flags
 data class MemberSessionState(
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -15,12 +17,15 @@ data class MemberSessionState(
     val isSavingProfile: Boolean = false
 )
 
+// MemberSessionViewModel manages all actions a member can perform
 class MemberSessionViewModel(private val api: SportClubApiService) {
     var state by mutableStateOf(MemberSessionState())
         private set
 
+    // SupervisorJob ensures that if one coroutine fails, the others are not cancelled
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
+    // Load all lessons the member is enrolled in
     fun loadEnrollments(memberId: String) {
         scope.launch {
             state = state.copy(isLoading = true)
@@ -37,6 +42,7 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Load only the lesson IDs on the waitlist
     fun loadWaitlist(memberId: String) {
         scope.launch {
             try {
@@ -46,6 +52,7 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Load the full profile of the member
     fun loadMemberInfo(memberId: String) {
         scope.launch {
             try {
@@ -55,6 +62,8 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Enrol the member in a lesson. bikeId is optional
+    // After success the lesson list is refreshed via onRefresh()
     fun reserve(lessonId: String, memberId: String, bikeId: String? = null, onRefresh: () -> Unit = {}) {
         scope.launch {
             try {
@@ -69,6 +78,7 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Cancel the member's enrolment in a lesson
     fun cancel(lessonId: String, memberId: String, onRefresh: () -> Unit = {}) {
         scope.launch {
             try {
@@ -83,6 +93,7 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Add the member to the waitlist for a full lesson
     fun joinWaitlist(lessonId: String, memberId: String) {
         scope.launch {
             try {
@@ -95,6 +106,7 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Remove the member from the waitlist
     fun leaveWaitlist(lessonId: String, memberId: String) {
         scope.launch {
             try {
@@ -107,6 +119,8 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Save a new username and/or profile picture via the API
+    // onDone(true) = success, onDone(false) = failure
     fun updateProfile(username: String, profileImageUrl: String?, onDone: (Boolean) -> Unit = {}) {
         scope.launch {
             state = state.copy(isSavingProfile = true)
@@ -121,6 +135,7 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Take out a new membership (Basic or Unlimited, monthly or yearly)
     fun subscribe(memberId: String, type: MembershipType, billingCycle: BillingCycle, startDate: String, onDone: (Boolean) -> Unit = {}) {
         scope.launch {
             try {
@@ -135,6 +150,7 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Upgrade a Basic membership to Unlimited
     fun upgrade(memberId: String, membershipId: String, onDone: (Boolean) -> Unit = {}) {
         scope.launch {
             try {

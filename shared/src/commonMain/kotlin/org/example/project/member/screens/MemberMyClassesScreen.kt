@@ -15,18 +15,22 @@ import org.example.project.member.navigation.MemberNavigator
 import org.example.project.util.todayDateString
 import org.example.project.viewmodel.MemberSessionViewModel
 
+// MemberMyClassesScreen shows all of the member's enrollments split across two tabs
 @Composable
 fun MemberMyClassesScreen(navigator: MemberNavigator, sessionVm: MemberSessionViewModel) {
     val state = sessionVm.state
     val user = navigator.currentUser
+    // showUpcoming controls which tab is currently active.
     var showUpcoming by remember { mutableStateOf(true) }
     val scroll = rememberScrollState()
 
+    // Load all enrollments when the screen opens.
     LaunchedEffect(user?.userId) {
         user?.let { sessionVm.loadEnrollments(it.userId) }
     }
 
     val today = todayDateString()
+    // Split enrollments by date into upcoming and past.
     val upcoming = state.enrolledLessons.filter { it.startTime >= today }.sortedBy { it.startTime }
     val past = state.enrolledLessons.filter { it.startTime < today }.sortedByDescending { it.startTime }
 
@@ -100,6 +104,7 @@ fun MemberMyClassesScreen(navigator: MemberNavigator, sessionVm: MemberSessionVi
     }
 }
 
+// renders the history or upcoming
 @Composable
 private fun TabItem(label: String, selected: Boolean, onClick: () -> Unit) {
     Box(

@@ -17,9 +17,12 @@ import org.example.project.member.navigation.MemberNavigator
 import org.example.project.model.Bike
 import org.example.project.model.Lesson
 import org.example.project.model.LocationType
+import org.example.project.util.formatDateFriendly
+import org.example.project.util.isLessonInPast
 import org.example.project.viewmodel.MemberSessionViewModel
 import org.example.project.viewmodel.ScheduleViewModel
 
+// MemberScheduleScreen shows all classes for the selected day.
 @Composable
 fun MemberScheduleScreen(
     navigator: MemberNavigator,
@@ -32,11 +35,15 @@ fun MemberScheduleScreen(
     val scroll = rememberScrollState()
     val scope = rememberCoroutineScope()
 
+    // Tracks which lesson the bike picker dialog is currently open for
     var bikePendingLesson by remember { mutableStateOf<Lesson?>(null) }
+    // The available bikes for the chosen spinning class (null = API error)
     var availableBikes by remember { mutableStateOf<List<Bike>?>(null) }
     var bikesLoading by remember { mutableStateOf(false) }
 
+    // Reload the schedule whenever the selected date changes
     LaunchedEffect(state.selectedDate) { scheduleVm.load() }
+    // Load this member's waitlist when the screen opens
     LaunchedEffect(user?.userId) { user?.let { sessionVm.loadWaitlist(it.userId) } }
 
     bikePendingLesson?.let { lesson ->
@@ -77,7 +84,7 @@ fun MemberScheduleScreen(
                     IconButton(onClick = { scheduleVm.previousDay() }) { Text("◀") }
                     Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(dayOfWeekName(state.selectedDate), fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                        Text(state.selectedDate, fontSize = 13.sp, color = Color(0xFF757575))
+                        Text(formatDateFriendly(state.selectedDate), fontSize = 13.sp, color = Color(0xFF757575))
                     }
                     IconButton(onClick = { scheduleVm.nextDay() }) { Text("▶") }
                 }
@@ -118,10 +125,12 @@ fun MemberScheduleScreen(
                         lessons.forEach { lesson ->
                             val isEnrolled = lesson.id in session.enrolledLessonIds
                             val isWaitlisted = lesson.id in session.waitlistLessonIds
+                            val isPast = isLessonInPast(lesson.startTime)
                             ScheduleLessonCard(
                                 lesson = lesson,
                                 isEnrolled = isEnrolled,
                                 isWaitlisted = isWaitlisted,
+                                isPast = isPast,
                                 onReserve = {
                                     if (lesson.locationType == LocationType.SPINNING) {
                                         scope.launch {
@@ -148,17 +157,21 @@ fun MemberScheduleScreen(
     }
 }
 
+// ScheduleLessonCard shows one class in the schedule with the correct action button:
 @Composable
 fun ScheduleLessonCard(
     lesson: Lesson,
     isEnrolled: Boolean,
     isWaitlisted: Boolean,
+    isPast: Boolean = false,
     onReserve: () -> Unit,
     onCancel: () -> Unit,
     onJoinWaitlist: () -> Unit,
     onLeaveWaitlist: () -> Unit
 ) {
+    // Card background colour
     val cardColor = when {
+        isPast -> Color(0xFFF5F5F5)
         isEnrolled -> Color(0xFFE8F5E9)
         isWaitlisted -> Color(0xFFFFF8E1)
         else -> Color.White
@@ -199,6 +212,14 @@ fun ScheduleLessonCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 when {
+                    isPast -> {
+                        Box(
+                            modifier = Modifier.clip(RoundedCornerShape(20.dp))
+                                .background(Color(0xFFBDBDBD))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) { Text("Ended", color = Color.White, fontSize = 12.sp) }
+                        Spacer(Modifier.weight(1f))
+                    }
                     isEnrolled -> {
                         Box(
                             modifier = Modifier.clip(RoundedCornerShape(20.dp))
@@ -251,6 +272,7 @@ fun ScheduleLessonCard(
     }
 }
 
+// Returns the day name
 private fun dayOfWeekName(date: String): String {
     val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
     return try {

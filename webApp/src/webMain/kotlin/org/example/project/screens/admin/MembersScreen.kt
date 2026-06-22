@@ -21,6 +21,9 @@ import org.example.project.model.MembershipType
 import org.example.project.theme.*
 import org.example.project.viewmodel.MemberViewModel
 
+// Admin screen for viewing all members (read-only, no add/edit/delete).
+// Includes a live search box that filters state.members client-side via MemberViewModel.setSearch().
+// Data: GET /users filtered by role "Member". Each row shows name, email, membership type & status.
 @Composable
 fun MembersScreen(vm: MemberViewModel) {
     LaunchedEffect(Unit) { vm.load() }

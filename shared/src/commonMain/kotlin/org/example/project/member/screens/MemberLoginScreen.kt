@@ -15,12 +15,16 @@ import androidx.compose.ui.unit.sp
 import org.example.project.member.navigation.MemberNavigator
 import org.example.project.viewmodel.AuthViewModel
 
+// MemberLoginScreen on start app
 @Composable
 fun MemberLoginScreen(navigator: MemberNavigator, authVm: AuthViewModel) {
     val state = authVm.state
+    // Local state fro input
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    // As soon as login succeeds and currentUser is set, it calls navigator.login()
+    // to redirect the user to the correct starting screen
     LaunchedEffect(state.currentUser) {
         val user = state.currentUser
         if (user != null) navigator.login(user)
@@ -44,12 +48,14 @@ fun MemberLoginScreen(navigator: MemberNavigator, authVm: AuthViewModel) {
                 Text("Welcome back", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 Text("Sign in to your SportClub account", fontSize = 14.sp, color = Color(0xFF757575))
 
+                // Email input field
                 OutlinedTextField(
                     email, { email = it },
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
+                // Password field -> text = hidden
                 OutlinedTextField(
                     password, { password = it },
                     label = { Text("Password") },
@@ -58,10 +64,12 @@ fun MemberLoginScreen(navigator: MemberNavigator, authVm: AuthViewModel) {
                     visualTransformation = PasswordVisualTransformation()
                 )
 
+                // Show an error message if login fails
                 state.error?.let {
                     Text(it, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
                 }
 
+                // Login button
                 Button(
                     onClick = { authVm.login(email.trim(), password) },
                     modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -74,7 +82,6 @@ fun MemberLoginScreen(navigator: MemberNavigator, authVm: AuthViewModel) {
                         Text("Sign In", fontWeight = FontWeight.SemiBold)
                     }
                 }
-
             }
         }
     }

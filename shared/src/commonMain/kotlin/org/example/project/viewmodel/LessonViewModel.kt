@@ -6,6 +6,7 @@ import org.example.project.api.SportClubApiService
 import org.example.project.model.*
 import org.example.project.util.todayDateString
 
+// State for the admin Schedule
 data class LessonManagementState(
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -19,52 +20,45 @@ data class LessonManagementState(
     val selectedWeekStart: String = todayDateString()
 )
 
+// Manages lesson scheduling CRUD
+// The backend supports one-off and recurring lessons
 class LessonViewModel(private val api: SportClubApiService) {
     var state by mutableStateOf(LessonManagementState())
         private set
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
+    // Loads lessons for a 7-day window plus the reference data needed for the edit dialog.
     fun loadAll(weekStart: String = state.selectedWeekStart) {
         scope.launch {
             state = state.copy(isLoading = true, error = null, selectedWeekStart = weekStart)
             try {
-                val weekEnd = weekStart // simplified; real impl adds 6 days
                 val (lessons, workouts, instructors, locations) = listOf(
-                    async { api.getLessons(weekStart, addDays(weekStart, 6)) },
+                    async { api.getLessons(weekStart, addDays(weekStart, 6)) }, // GET
                     async { api.getWorkouts() },
                     async { api.getInstructors() },
                     async { api.getLocations() }
-                ).let { (a, b, c, d) ->
-                    listOf(a.await(), b.await(), c.await(), d.await())
-                }
+                ).let { (a, b, c, d) -> listOf(a.await(), b.await(), c.await(), d.await()) }
+
                 @Suppress("UNCHECKED_CAST")
-                state = state.copy(
-                    isLoading = false,
-                    lessons = lessons as List<Lesson>,
-                    workouts = workouts as List<Workout>,
-                    instructors = instructors as List<Instructor>,
-                    locations = locations as List<Location>
-                )
+                state = state.copy(isLoading = false, lessons = lessons as List<Lesson>, workouts = workouts as List<Workout>, instructors = instructors as List<Instructor>, locations = locations as List<Location>)
             } catch (e: Exception) {
                 state = state.copy(isLoading = false, error = e.message)
             }
         }
     }
 
+    // Simple date arithmetic
     private fun addDays(date: String, days: Int): String {
-        // Simple date arithmetic for ISO dates (YYYY-MM-DD)
         val parts = date.split("-")
-        val year = parts[0].toInt()
-        val month = parts[1].toInt()
-        val day = parts[2].toInt() + days
+        val year = parts[0].toInt(); val month = parts[1].toInt(); val day = parts[2].toInt() + days
         val daysInMonth = listOf(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
         return if (day <= daysInMonth[month]) {
             "$year-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}"
         } else {
             val newDay = day - daysInMonth[month]
             val newMonth = if (month == 12) 1 else month + 1
-            val newYear = if (month == 12) year + 1 else year
+            val newYear  = if (month == 12) year + 1 else year
             "$newYear-${newMonth.toString().padStart(2, '0')}-${newDay.toString().padStart(2, '0')}"
         }
     }
@@ -75,11 +69,9 @@ class LessonViewModel(private val api: SportClubApiService) {
     fun showDeleteConfirm(id: String) { state = state.copy(showDeleteConfirm = id) }
     fun dismissDeleteConfirm() { state = state.copy(showDeleteConfirm = null) }
 
-    fun save(
-        workoutId: String, instructorId: String?, locationId: String,
-        startTime: String, durationMinutes: Int, capacity: Int,
-        recurrence: RecurrenceType, recurrenceEndDate: String?
-    ) {
+    // Creates or updates a lesson
+    // PUT /lessons/{id} if editing; POST /lessons or POST /lessons/recurring if new.
+    fun save(workoutId: String, instructorId: String?, locationId: String, startTime: String, durationMinutes: Int, capacity: Int, recurrence: RecurrenceType, recurrenceEndDate: String?) {
         scope.launch {
             state = state.copy(isLoading = true)
             try {
@@ -94,18 +86,16 @@ class LessonViewModel(private val api: SportClubApiService) {
         }
     }
 
+    // Delete the lesson
     fun delete(id: String) {
         scope.launch {
             state = state.copy(isLoading = true, showDeleteConfirm = null)
-            try {
-                api.deleteLesson(id)
-                loadAll()
-            } catch (e: Exception) {
-                state = state.copy(isLoading = false, error = e.message)
-            }
+            try { api.deleteLesson(id); loadAll() }
+            catch (e: Exception) { state = state.copy(isLoading = false, error = e.message) }
         }
     }
 
+    // Go to the previous week
     fun previousWeek() {
         val parts = state.selectedWeekStart.split("-")
         val day = parts[2].toInt() - 7
@@ -122,9 +112,9 @@ class LessonViewModel(private val api: SportClubApiService) {
         loadAll(newDate)
     }
 
-    fun nextWeek() {
-        loadAll(addDays(state.selectedWeekStart, 7))
-    }
+    // Go tpo the next week
+    fun nextWeek() { loadAll(addDays(state.selectedWeekStart, 7)) }
 
+    // If the user dismisses the error
     fun clearError() { state = state.copy(error = null) }
 }

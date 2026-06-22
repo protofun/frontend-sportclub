@@ -18,6 +18,7 @@ import org.example.project.model.*
 import org.example.project.util.todayDateString
 import org.example.project.viewmodel.MemberSessionViewModel
 
+// Converts a price in cents to a readable string (e.g. 2900 → "29.00").
 private fun formatPrice(priceInCents: Int): String =
     "${priceInCents / 100}.${(priceInCents % 100).toString().padStart(2, '0')}"
 
@@ -29,13 +30,16 @@ private val availablePlans = listOf(
     MembershipPrice(MembershipType.UNLIMITED, BillingCycle.YEARLY, 54900)
 )
 
+// MemberSubscriptionScreen manages the member's membership.
+// Without a subscription: available plans are shown so the member can sign up.
+// With a subscription: shows the current plan, its benefits, and an upgrade button (Basic → Unlimited).
 @Composable
 fun MemberSubscriptionScreen(navigator: MemberNavigator, sessionVm: MemberSessionViewModel) {
     val state = sessionVm.state
-    val sub = state.memberInfo?.activeMembership
+    val sub = state.memberInfo?.activeMembership  // the current active subscription (null = none)
     val scroll = rememberScrollState()
-    var subscribingTo by remember { mutableStateOf<MembershipPrice?>(null) }
-    var isUpgrading by remember { mutableStateOf(false) }
+    var subscribingTo by remember { mutableStateOf<MembershipPrice?>(null) } // which plan is being purchased right now
+    var isUpgrading by remember { mutableStateOf(false) }                    // true while an upgrade request is in flight
 
     LaunchedEffect(navigator.currentUser?.userId) {
         navigator.currentUser?.let { sessionVm.loadMemberInfo(it.userId) }
@@ -98,7 +102,7 @@ fun MemberSubscriptionScreen(navigator: MemberNavigator, sessionVm: MemberSessio
             } else {
                 val isActive = sub.status == MembershipStatus.ACTIVE
 
-                // Current plan card
+                // Current plan card — blue when active, grey when expired.
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
@@ -143,7 +147,7 @@ fun MemberSubscriptionScreen(navigator: MemberNavigator, sessionVm: MemberSessio
                     }
                 }
 
-                // Benefits
+                // Plan benefits card
                 Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                     Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
                         Text("Plan Benefits", fontWeight = FontWeight.Bold, fontSize = 16.sp)

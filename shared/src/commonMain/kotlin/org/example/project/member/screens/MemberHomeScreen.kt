@@ -21,12 +21,15 @@ import org.example.project.model.*
 import org.example.project.util.todayDateString
 import org.example.project.viewmodel.MemberSessionViewModel
 
+// MemberHomeScreen is the first screen a member sees after logging in.
+// It shows subscription status, upcoming classes and quick-action shortcuts.
 @Composable
 fun MemberHomeScreen(navigator: MemberNavigator, sessionVm: MemberSessionViewModel) {
     val state = sessionVm.state
     val user = navigator.currentUser
     val scroll = rememberScrollState()
 
+    // Load data once the user is known
     LaunchedEffect(user?.userId) {
         user?.let { u ->
             sessionVm.loadMemberInfo(u.userId)
@@ -34,6 +37,7 @@ fun MemberHomeScreen(navigator: MemberNavigator, sessionVm: MemberSessionViewMod
         }
     }
 
+    // Derive first name and initials for the greeting header and avatar.
     val firstName = user?.fullName?.split(" ")?.firstOrNull() ?: "Member"
     val initials = user?.fullName?.split(" ")?.take(2)
         ?.mapNotNull { it.firstOrNull()?.toString() }?.joinToString("") ?: "?"
@@ -111,6 +115,7 @@ fun MemberHomeScreen(navigator: MemberNavigator, sessionVm: MemberSessionViewMod
     }
 }
 
+// SubscriptionStatusCard shows a green or red banner with the current subscription status.
 @Composable
 private fun SubscriptionStatusCard(sub: Membership?) {
     val isActive = sub?.status == MembershipStatus.ACTIVE
@@ -150,6 +155,8 @@ private fun SubscriptionStatusCard(sub: Membership?) {
     }
 }
 
+// MemberLessonCard displays one lesson
+// onCancel is null for past lessons (no cancel button is shown in that case).
 @Composable
 fun MemberLessonCard(lesson: org.example.project.model.Lesson, onCancel: (() -> Unit)?) {
     Card(
@@ -192,6 +199,7 @@ fun MemberLessonCard(lesson: org.example.project.model.Lesson, onCancel: (() -> 
     }
 }
 
+// QuickActionCard fro shortcuts
 @Composable
 private fun QuickActionCard(icon: String, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(

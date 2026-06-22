@@ -21,8 +21,15 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.example.project"
+            packageName = "SportClub"
             packageVersion = "1.0.0"
+            description = "SportClub — Reserve classes and manage your membership"
+            vendor = "SportClub"
+            windows {
+                menuGroup = "SportClub"
+                shortcut = true
+                dirChooser = true
+            }
         }
     }
 }

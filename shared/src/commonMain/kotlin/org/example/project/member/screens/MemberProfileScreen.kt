@@ -21,6 +21,8 @@ import org.example.project.util.rememberImagePicker
 import org.example.project.viewmodel.AuthViewModel
 import org.example.project.viewmodel.MemberSessionViewModel
 
+// MemberProfileScreen shows the member's profile details
+
 @Composable
 fun MemberProfileScreen(navigator: MemberNavigator, sessionVm: MemberSessionViewModel, authVm: AuthViewModel) {
     val state = sessionVm.state
@@ -34,9 +36,11 @@ fun MemberProfileScreen(navigator: MemberNavigator, sessionVm: MemberSessionView
         user?.let { sessionVm.loadMemberInfo(it.userId) }
     }
 
+    // Prefer the chosen username; fall back to the full name from the login response.
     val displayName = member?.username?.takeIf { it.isNotBlank() } ?: user?.fullName
     val initials = displayName?.split(" ")?.take(2)
         ?.mapNotNull { it.firstOrNull()?.toString() }?.joinToString("") ?: "?"
+    // Decode the profile picture if available
     val avatarBitmap = member?.profileImageUrl?.let { decodeImageBitmap(it) }
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll).background(Color(0xFFF8F9FA))) {
@@ -45,7 +49,7 @@ fun MemberProfileScreen(navigator: MemberNavigator, sessionVm: MemberSessionView
         }
 
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            // Avatar + name
+            // Avatar + name card
             Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(24.dp),
@@ -87,7 +91,7 @@ fun MemberProfileScreen(navigator: MemberNavigator, sessionVm: MemberSessionView
                 }
             }
 
-            // Details
+            // Account details card
             Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                 Column(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Account Details", fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -140,6 +144,8 @@ fun MemberProfileScreen(navigator: MemberNavigator, sessionVm: MemberSessionView
     }
 }
 
+// EditProfileDialog lets the member set a username and choose a profile picture.
+// The photo is stored as a base64 data URL
 @Composable
 private fun EditProfileDialog(
     member: org.example.project.model.Member?,
@@ -149,6 +155,7 @@ private fun EditProfileDialog(
 ) {
     var username by remember { mutableStateOf(member?.username ?: "") }
     var photoDataUrl by remember { mutableStateOf(member?.profileImageUrl) }
+    // rememberImagePicker returns an object with functions to open the gallery or camera.
     val picker = rememberImagePicker { dataUrl -> photoDataUrl = dataUrl }
 
     AlertDialog(
@@ -200,6 +207,7 @@ private fun EditProfileDialog(
     )
 }
 
+// ProfileRow shows one line with a label on the left and a value on the right
 @Composable
 private fun ProfileRow(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

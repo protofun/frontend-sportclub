@@ -17,6 +17,12 @@ import org.example.project.theme.*
 import org.example.project.util.todayDateString
 import org.example.project.viewmodel.LessonViewModel
 
+// Admin lesson management screen — create, edit, and delete scheduled class sessions.
+// Shows a week view; ◀ / ▶ navigate by week via vm.previousWeek() / vm.nextWeek().
+//
+// On open: vm.loadAll() fetches lessons, workouts, instructors, and locations in parallel.
+// The edit dialog lets admins pick workout, instructor, location, time, duration, and capacity.
+// Recurring lessons (DAILY/WEEKLY with an end date) create a series via POST /lessons/recurring.
 @Composable
 fun LessonManagementScreen(vm: LessonViewModel) {
     LaunchedEffect(Unit) { vm.loadAll() }
@@ -165,7 +171,10 @@ private fun LessonDialog(
     var selectedWorkout by remember { mutableStateOf(existing?.workoutId ?: workouts.firstOrNull()?.id ?: "") }
     var selectedInstructor by remember { mutableStateOf<String?>(existing?.instructorId) }
     var selectedLocation by remember { mutableStateOf(existing?.locationId ?: locations.firstOrNull()?.id ?: "") }
-    var startTime by remember { mutableStateOf(existing?.startTime ?: "${todayDateString()}T09:00:00") }
+    val existingDate = existing?.startTime?.substringBefore("T") ?: todayDateString()
+    val existingTime = existing?.startTime?.substringAfter("T")?.substring(0, 5) ?: "09:00"
+    var startDate by remember { mutableStateOf(existingDate) }
+    var startTimeOfDay by remember { mutableStateOf(existingTime) }
     var duration by remember { mutableStateOf((existing?.durationMinutes ?: 60).toString()) }
     var capacity by remember { mutableStateOf((existing?.maxCapacity ?: 10).toString()) }
     var recurrence by remember { mutableStateOf(RecurrenceType.NONE) }
@@ -227,7 +236,8 @@ private fun LessonDialog(
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(startTime, { startTime = it }, label = { Text("Start Time (YYYY-MM-DDThh:mm:ss)") }, modifier = Modifier.weight(2f))
+                    OutlinedTextField(startDate, { startDate = it }, label = { Text("Date (YYYY-MM-DD)") }, modifier = Modifier.weight(2f), placeholder = { Text("2026-06-21") })
+                    OutlinedTextField(startTimeOfDay, { startTimeOfDay = it }, label = { Text("Time (HH:MM)") }, modifier = Modifier.weight(1f), placeholder = { Text("09:00") })
                     OutlinedTextField(duration, { duration = it }, label = { Text("Duration (min)") }, modifier = Modifier.weight(1f))
                 }
 
@@ -246,22 +256,25 @@ private fun LessonDialog(
                 }
 
                 if (recurrence != RecurrenceType.NONE) {
-                    OutlinedTextField(recEndDate, { recEndDate = it }, label = { Text("End Date (optional)") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(recEndDate, { recEndDate = it }, label = { Text("Repeat until (YYYY-MM-DD)") }, modifier = Modifier.fillMaxWidth(), placeholder = { Text("2026-12-31") })
                 }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
+                    val time = if (startTimeOfDay.length == 5) "${startTimeOfDay}:00" else startTimeOfDay
+                    val combinedStartTime = "${startDate}T${time}"
                     onSave(
                         selectedWorkout, selectedInstructor, selectedLocation,
-                        startTime, duration.toIntOrNull() ?: 60,
+                        combinedStartTime, duration.toIntOrNull() ?: 60,
                         capacity.toIntOrNull() ?: 10,
                         recurrence,
                         recEndDate.ifBlank { null }
                     )
                 },
-                enabled = selectedWorkout.isNotBlank() && selectedLocation.isNotBlank() && startTime.isNotBlank()
+                enabled = selectedWorkout.isNotBlank() && selectedLocation.isNotBlank() &&
+                          startDate.isNotBlank() && startTimeOfDay.isNotBlank()
             ) { Text(if (existing != null) "Save Changes" else "Add Class") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
