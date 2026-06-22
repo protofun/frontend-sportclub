@@ -41,6 +41,12 @@ interface SportClubApiService {
     suspend fun getMembershipPrices(): List<MembershipPrice>            // GET /memberships/prices
     suspend fun subscribeMembership(type: MembershipType, billingCycle: BillingCycle, startDate: String): Membership
     suspend fun upgradeMembership(membershipId: String): Membership
+    suspend fun cancelMembership(membershipId: String): Membership      // PUT /memberships/{id}/cancel
+    suspend fun getUpcomingMembership(): Membership?                    // GET /memberships/me/upcoming
+
+    // Notifications
+    suspend fun getNotifications(): List<AppNotification>               // GET /notifications/me
+    suspend fun markNotificationRead(id: String)                        // PUT /notifications/{id}/read
 
     // Admin stats
     suspend fun getLessonOccupancy(startDate: String, endDate: String): List<LessonOccupancy>

@@ -14,7 +14,9 @@ data class MemberSessionState(
     val waitlistLessonIds: Set<String> = emptySet(),
     val enrolledLessons: List<Lesson> = emptyList(),
     val memberInfo: Member? = null,
-    val isSavingProfile: Boolean = false
+    val isSavingProfile: Boolean = false,
+    val notifications: List<AppNotification> = emptyList(),
+    val upcomingMembership: Membership? = null
 )
 
 // MemberSessionViewModel manages all actions a member can perform
@@ -52,12 +54,13 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
         }
     }
 
-    // Load the full profile of the member
+    // Load the full profile of the member + any upcoming (pending) membership
     fun loadMemberInfo(memberId: String) {
         scope.launch {
             try {
                 val member = api.getMember(memberId)
-                state = state.copy(memberInfo = member)
+                val upcoming = api.getUpcomingMembership()
+                state = state.copy(memberInfo = member, upcomingMembership = upcoming)
             } catch (e: Exception) { }
         }
     }
@@ -162,6 +165,45 @@ class MemberSessionViewModel(private val api: SportClubApiService) {
                 state = state.copy(error = e.message)
                 onDone(false)
             }
+        }
+    }
+
+    // Cancel a monthly membership
+    fun cancelMembership(membershipId: String, memberId: String, onDone: (Boolean) -> Unit = {}) {
+        scope.launch {
+            try {
+                api.cancelMembership(membershipId)
+                loadMemberInfo(memberId)
+                state = state.copy(error = null)
+                onDone(true)
+            } catch (e: Exception) {
+                state = state.copy(error = e.message)
+                onDone(false)
+            }
+        }
+    }
+
+    // Load in-app notifications for this member
+    fun loadNotifications() {
+        scope.launch {
+            try {
+                val list = api.getNotifications()
+                state = state.copy(notifications = list)
+            } catch (e: Exception) { }
+        }
+    }
+
+    // Mark a single notification as read
+    fun markNotificationRead(id: String) {
+        scope.launch {
+            try {
+                api.markNotificationRead(id)
+                state = state.copy(
+                    notifications = state.notifications.map {
+                        if (it.id == id) it.copy(isRead = true) else it
+                    }
+                )
+            } catch (e: Exception) { }
         }
     }
 

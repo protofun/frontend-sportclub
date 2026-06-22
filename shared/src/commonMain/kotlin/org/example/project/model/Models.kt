@@ -232,6 +232,15 @@ data class DashboardStats(
     val enrollmentsToday: Int
 )
 
+@Serializable
+data class AppNotification(
+    val id: String,
+    val type: String,
+    val message: String,
+    val isRead: Boolean,
+    val createdAt: String
+)
+
 // ---------------------------------------------------------------------------------------------
 // Request / response models
 // ---------------------------------------------------------------------------------------------

@@ -209,6 +209,11 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
         return response.body()
     }
 
+    private suspend fun apiPutNoBodyUnit(path: String) {
+        val response = client.put("$baseUrl$path") { authorize() }
+        ensureSuccess(response)
+    }
+
     private suspend fun apiDelete(path: String) {
         val response = client.delete("$baseUrl$path") { authorize() }
         ensureSuccess(response)
@@ -456,6 +461,29 @@ class RealApiService(private val baseUrl: String = defaultApiBaseUrl()) : SportC
 
     override suspend fun upgradeMembership(membershipId: String): Membership =
         apiPutNoBody<MembershipDto>("/memberships/$membershipId/upgrade").toMembership()
+
+    override suspend fun cancelMembership(membershipId: String): Membership =
+        apiPutNoBody<MembershipDto>("/memberships/$membershipId/cancel").toMembership()
+
+    override suspend fun getUpcomingMembership(): Membership? =
+        try { apiGet<MembershipDto>("/memberships/me/upcoming").toMembership() } catch (e: Exception) { null }
+
+    @Serializable
+    private data class NotificationDto(
+        val id: String,
+        val type: String,
+        val message: String,
+        val isRead: Boolean,
+        val createdAt: String
+    )
+
+    override suspend fun getNotifications(): List<AppNotification> =
+        apiGet<List<NotificationDto>>("/notifications/me").map {
+            AppNotification(it.id, it.type, it.message, it.isRead, it.createdAt)
+        }
+
+    override suspend fun markNotificationRead(id: String) =
+        apiPutNoBodyUnit("/notifications/$id/read")
 
     // ---- occupancy / dashboard stats --------------------------------------------------------------
 

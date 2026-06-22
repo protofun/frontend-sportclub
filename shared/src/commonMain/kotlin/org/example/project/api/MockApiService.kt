@@ -235,6 +235,19 @@ class MockApiService : SportClubApiService {
         return upgraded
     }
 
+    override suspend fun cancelMembership(membershipId: String): Membership {
+        val id = currentUserId ?: throw Exception("Not logged in")
+        val idx = members.indexOfFirst { it.id == id }
+        val current = members.getOrNull(idx)?.activeMembership ?: throw Exception("No active membership")
+        val cancelled = current.copy(status = MembershipStatus.CANCELLED)
+        members[idx] = members[idx].copy(activeMembership = cancelled)
+        return cancelled
+    }
+
+    override suspend fun getUpcomingMembership(): Membership? = null
+    override suspend fun getNotifications(): List<AppNotification> = emptyList()
+    override suspend fun markNotificationRead(id: String) {}
+
     override suspend fun getLessonOccupancy(startDate: String, endDate: String): List<LessonOccupancy> =
         getLessons(startDate, endDate).map { lesson ->
             LessonOccupancy(lesson, members.take(lesson.enrolledCount).map { m ->
